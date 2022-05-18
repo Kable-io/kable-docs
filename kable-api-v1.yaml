@@ -1,0 +1,969 @@
+openapi: 3.0.0
+servers:
+  # Added by API Auto Mocking Plugin
+  - description: Kable Live
+    url: 'https://live.kable.io/api/v1'
+  - description: Kable Test
+    url: 'https://test.kable.io/api/v1'
+
+info:
+  description: |
+    The Kable API allows developers to manage **customers** and **API keys** and record **events** about their API.
+
+
+    ## API Host and Environments
+
+    Kable is accessible in Live and Test environments for authentication and metering of client API requests. You will have separate API keys to access each environment.
+
+    You should only use Kable's Live environment for your own production data. All other configured environments should use Kable's Test environment.
+
+
+    ## API Protocols and Headers
+
+    All requests to the Kable API are made over HTTPS TLS v1.2+ to ensure security. Calls made over HTTP will fail. Any requests without proper authentication will also fail.
+
+    The Kable API uses standard JSON for requests and responses. Be sure to set both the `Content-Type` and `Accept` headers on each request to application/json.
+
+    Each Kable API response includes a `requestId` as the `X-REQUEST-ID` response header. The `requestId` is included regardless whether the API request succeeded or failed. You can use this requestId to help with debugging or when contacting support regarding a specific API call.
+
+
+    ## API Keys
+
+    There are two types of API keys on Kable.
+
+    ### Kable Keys
+    Kable Keys are the keys you, the Kable customer, use to interact with Kable. These keys help us ensure that only you are interacting with Kable on your behalf. You can find your keys on the Company page of the dashboard after you sign up.
+
+    Kable Keys should be included in every request to the Kable API. You must provide your client ID as the `KABLE-CLIENT-ID` header and your secret key as the `KABLE-CLIENT-SECRET` header on each request to Kable. If you are using a language-specific Kable library, you will initialize the SDK using these keys.
+
+    ### Customer Keys
+    Customer Keys are the keys your customers use to interact with your API. Customer Keys are authenticated by Kable when a customer makes a request to your API if you use Kable's authentication services. Customers must provide their client ID (defined as `clientId` when you create the customer) as the `X-CLIENT-ID` header and their secret key as the `X-API-KEY` header on each request to your API that Kable is to authenticate.
+
+
+    ## API Versioning
+
+    All Kable endpoints are versioned. After the host, each API can be found at `/api/vX/...` where X is the API version.
+
+    We strive to ensure that changes to the Kable API are backward compatible. Sometimes, though, we must break from older design paradigms to make the product better. When this happens, a new version of the API is released.
+
+    The current version of Kable is **v1**.
+
+
+
+
+  version: 1.2.1
+  title: Kable API
+  contact:
+    email: contact@kable.io
+  # license:
+  #   name: Apache 2.0
+  #   url: 'http://www.apache.org/licenses/LICENSE-2.0.html'
+tags:
+  - name: customers
+    description: The customers API allows developers to programmatically create customers on Kable. Call this API when a customer signs up for your API product. Note that customer creation can also be handled in the Customers tab of your dashboard.
+  - name: keys
+    description: The key management API allows developers to create and revoke API keys. These functions are fully self-serviceable through the Kable dashboard, but are also made available through the public API.
+  - name: events
+    description: |
+      The events API allows developers to record events that occur in their API. Events are at the core of Kable's metering engine. All usage metrics that Kable reports are based on events.
+
+      For a closer look at events on Kable, we suggest reading the Events overview documentation.
+  - name: tokens
+    description: The token API allows developers to create short-lived access tokens that grant temporary permissions to read usage data from Kable. This is useful if want to embed Kable dashboards within your developer portal to give your customers visibility into their usage of your product.
+
+paths:
+
+  /customers:
+    get:
+      tags:
+        - customers
+      summary: get all customers
+      operationId: getAllCustomers
+      description: |
+        Retrieve all customers.
+      parameters:
+        - in: header
+          name: Kable-Client-Id
+          description: Your client ID, found in the dashboard of your Kable account.
+          schema:
+            type: string
+          example: kci_3c90e9ac92c64f31ae8ed84d21e18740
+        - in: header
+          name: Kable-Client-Secret
+          description: Your `LIVE` or `TEST` secret key. Customers exist across all environments, so it does not matter which environment you use to fetch customers.
+          schema:
+            type: string
+          example: sk_test.jI92Cbu0.XeHWdYM1VTLy4oLtGMw8wrmpt5q9d04n
+          required: true
+      responses:
+        '200':
+          description: 'information about your customers'
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Customer"
+        '401':
+          description: 'unauthorized'
+
+  /customers/{customerId}:
+    get:
+      tags:
+        - customers
+      summary: get customer
+      operationId: getCustomer
+      description: |
+        Retrieve a customer.
+      parameters:
+        - in: header
+          name: Kable-Environment
+          description: The environment for the request. Valid values are `LIVE` and `TEST`.
+          schema:
+            type: string
+          example: TEST
+          required: true
+        - in: header
+          name: Kable-Client-Id
+          description: Your client ID, found in the dashboard of your Kable account.
+          schema:
+            type: string
+          example: kci_3c90e9ac92c64f31ae8ed84d21e18740
+        - in: header
+          name: Kable-Client-Secret
+          description: Your `LIVE` or `TEST` secret key. Customers exist across all environments, so it does not matter which environment you use to fetch customers.
+          schema:
+            type: string
+          example: sk_test.jI92Cbu0.XeHWdYM1VTLy4oLtGMw8wrmpt5q9d04n
+          required: true
+        - in: path
+          name: customerId
+          description: The identifier for the customer. You can pass in *either* the `customerId` (as defined by Kable) or the `clientId` (as defined by you).
+          schema:
+            type: string
+          example: yourcompanyuser_1234567890
+          required: true
+      responses:
+        '200':
+          description: 'information about your customer'
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Customer"
+        '401':
+          description: 'unauthorized'
+        '404':
+          description: 'not found'
+
+  /customers/create:
+    post:
+      tags:
+        - customers
+      summary: create a customer
+      operationId: createCustomer
+      description: |
+        Create a new customer. Call this when a new customer signs up for your API.
+
+        You can this API in the `LIVE` or `TEST` environment and the outcome will be the same. Customers exist across environments. Handling of subsequent customer requests in a given environment are governed by the environment-specific keys (`LIVE` or `TEST`) they use to authenticate.
+
+        Note that clients can also be created manually from within the Customers tab of your Kable dashboard.
+      parameters:
+        - in: header
+          name: Kable-Client-Id
+          description: Your client ID, found in the dashboard of your Kable account.
+          schema:
+            type: string
+          example: kci_3c90e9ac92c64f31ae8ed84d21e18740
+        - in: header
+          name: Kable-Client-Secret
+          description: Your `LIVE` or `TEST` secret key. Customers exist across all environments, so it does not matter which environment you use to create customers. Each customer will have separate keys for `LIVE` and `TEST` environments of your API.
+          schema:
+            type: string
+          example: sk_test.jI92Cbu0.XeHWdYM1VTLy4oLtGMw8wrmpt5q9d04n
+          required: true
+        - in: query
+          name: keys
+          description: When true, Kable will create API keys for this customer. (This is only necessary if you use Kable for authentication.)
+          schema:
+            type: boolean
+          example: true
+          required: false
+        - in: query
+          name: stripe
+          description: |
+            When true, Kable will also create and attach a Stripe customer.
+
+            If your account is not connected to Stripe, the request will fail. If you provide a `stripeCustomerId` in the request body, this query parameter will be ignored.
+          schema:
+            type: boolean
+          example: true
+          required: false
+
+      requestBody:
+        description: |
+          Information about the customer you are creating.
+
+          Client IDs should correspond to identifiers in your own application. If you are migrating from another authentication system, this is often the same `clientId` that the customer was using before. Each client ID must be unique, as Kable uses this field to uniquely identify customers. Company names can be edited later in the dashboard, but client IDs cannot be changed.
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - clientId
+                - companyName
+              properties:
+                clientId:
+                  type: string
+                  example: yourcompanyuser_1234567890
+                companyName:
+                  type: string
+                  example: Awesome Corp
+                stripeCustomerId:
+                  type: string
+                  example: cus_a91565WBFwU30c
+                planIds:
+                  type: array
+                  items:
+                    type: string
+                  example: ["pln_a23e148584d0463482c961b7f62f824c"]
+      responses:
+        '200':
+          description: 'new customer successfully created'
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - customerId
+                  - clientId
+                  - companyName
+                properties:
+                  customerId:
+                    type: string
+                    example: 'cus_8276e1ac8ed84d21c64f31ae0082fe'
+                  clientId:
+                    type: string
+                    example: 'yourcompanyuser_1234567890'
+                  companyName:
+                    type: string
+                    example: 'Awesome Corp'
+                  stripeCustomerId:
+                    type: string
+                    example: cus_a91565WBFwU30c
+                  keys:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Key"
+                  created:
+                    type: string
+                    example: '2022-01-09'
+        '400':
+          description: 'invalid input, object invalid'
+        '401':
+          description: 'unauthorized'
+
+  /customers/{customerId}/update:
+    post:
+      tags:
+        - customers
+      summary: update a customer
+      operationId: updateCustomer
+      description: |
+        Update a customer. Call this to programmatically update information about an existing customer.
+
+        Note that clients can also be updated manually from within the Customers tab of your Kable dashboard.
+      parameters:
+        - in: header
+          name: Kable-Client-Id
+          description: Your client ID, found in the dashboard of your Kable account.
+          schema:
+            type: string
+          example: kci_3c90e9ac92c64f31ae8ed84d21e18740
+        - in: header
+          name: Kable-Client-Secret
+          description: Your `LIVE` or `TEST` secret key. Customers exist across all environments, so it does not matter which environment you use to create customers. Each customer will have separate keys for `LIVE` and `TEST` environments of your API.
+          schema:
+            type: string
+          example: sk_test.jI92Cbu0.XeHWdYM1VTLy4oLtGMw8wrmpt5q9d04n
+          required: true
+        - in: path
+          name: customerId
+          description: The identifier for the customer. You can pass in *either* the `customerId` (as defined by Kable) or the `clientId` (as defined by you).
+          schema:
+            type: string
+          example: cus_8276e1ac8ed84d21c64f31ae0082fe
+          required: true
+      requestBody:
+        description: Information to update about the customer.
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                companyName:
+                  type: string
+                  example: Awesome Corp
+                stripeCustomerId:
+                  type: string
+                  example: cus_a91565WBFwU30c
+      responses:
+        '200':
+          description: 'customer successfully updated'
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Customer"
+        '400':
+          description: 'invalid input, object invalid'
+        '401':
+          description: 'unauthorized'
+
+  /customers/{customerId}/cancel:
+    post:
+      tags:
+        - customers
+      summary: cancel a customer
+      operationId: cancelCustomer
+      description: |
+        Cancelling a customer will update its status to `"CANCELLED"` and terminate all future billing.
+      parameters:
+        - in: header
+          name: Kable-Client-Id
+          description: Your client ID, found in the dashboard of your Kable account.
+          schema:
+            type: string
+          example: kci_3c90e9ac92c64f31ae8ed84d21e18740
+        - in: header
+          name: Kable-Client-Secret
+          description: Your `LIVE` or `TEST` secret key. Customers exist across all environments, so it does not matter which environment you use to create customers. Each customer will have separate keys for `LIVE` and `TEST` environments of your API.
+          schema:
+            type: string
+          example: sk_test.jI92Cbu0.XeHWdYM1VTLy4oLtGMw8wrmpt5q9d04n
+          required: true
+        - in: path
+          name: customerId
+          description: The identifier for the customer. You can pass in *either* the `customerId` (as defined by Kable) or the `clientId` (as defined by you).
+          schema:
+            type: string
+          example: cus_8276e1ac8ed84d21c64f31ae0082fe
+          required: true
+      responses:
+        '200':
+          description: 'customer successfully cancelled'
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Customer"
+        '400':
+          description: 'invalid input, object invalid'
+        '401':
+          description: 'unauthorized'
+
+  /customers/{customerId}/plans/add:
+    post:
+      tags:
+        - customers
+      summary: add a plan(s) to a customer
+      operationId: addCustomerPlans
+      description: |
+        Add a plan(s) to a customer.
+
+        Note that customer plans can also be added and removed manually from within the Customers tab of your Kable dashboard.
+      parameters:
+        - in: header
+          name: Kable-Client-Id
+          description: Your client ID, found in the dashboard of your Kable account.
+          schema:
+            type: string
+          example: kci_3c90e9ac92c64f31ae8ed84d21e18740
+        - in: header
+          name: Kable-Client-Secret
+          description: Your `LIVE` or `TEST` secret key. Customers exist across all environments, so it does not matter which environment you use to create customers. Each customer will have separate keys for `LIVE` and `TEST` environments of your API.
+          schema:
+            type: string
+          example: sk_test.jI92Cbu0.XeHWdYM1VTLy4oLtGMw8wrmpt5q9d04n
+          required: true
+        - in: path
+          name: customerId
+          description: The identifier for the customer. You can pass in *either* the `customerId` (as defined by Kable) or the `clientId` (as defined by you).
+          schema:
+            type: string
+          example: cus_8276e1ac8ed84d21c64f31ae0082fe
+          required: true
+      requestBody:
+        description: Plan ID(s) to add. You can provide either a singular `planId` or a list of `planIds`.
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                planId:
+                  type: string
+                  example: pln_a23e148584d0463482c961b7f62f824c
+                planIds:
+                  type: array
+                  items:
+                    type: string
+                  example: ["pln_a23e148584d0463482c961b7f62f824c", "pln_b177473b31d44c3b8a2a365618a3deca"]
+      responses:
+        '200':
+          description: 'customer plan successfully added'
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Customer"
+        '400':
+          description: 'invalid input, object invalid'
+        '401':
+          description: 'unauthorized'
+
+  /customers/{customerId}/plans/remove:
+    post:
+      tags:
+        - customers
+      summary: remove a plan(s) from a customer
+      operationId: removeCustomerPlans
+      description: |
+        Remove a plan(s) from a customer.
+
+        Note that customer plans can also be added and removed manually from within the Customers tab of your Kable dashboard.
+      parameters:
+        - in: header
+          name: Kable-Client-Id
+          description: Your client ID, found in the dashboard of your Kable account.
+          schema:
+            type: string
+          example: kci_3c90e9ac92c64f31ae8ed84d21e18740
+        - in: header
+          name: Kable-Client-Secret
+          description: Your `LIVE` or `TEST` secret key. Customers exist across all environments, so it does not matter which environment you use to create customers. Each customer will have separate keys for `LIVE` and `TEST` environments of your API.
+          schema:
+            type: string
+          example: sk_test.jI92Cbu0.XeHWdYM1VTLy4oLtGMw8wrmpt5q9d04n
+          required: true
+        - in: path
+          name: customerId
+          description: The identifier for the customer. You can pass in *either* the `customerId` (as defined by Kable) or the `clientId` (as defined by you).
+          schema:
+            type: string
+          example: cus_8276e1ac8ed84d21c64f31ae0082fe
+          required: true
+      requestBody:
+        description: Plan ID(s) to remove. You can provide either a singular `planId` or a list of `planIds`.
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                planId:
+                  type: string
+                  example: pln_a23e148584d0463482c961b7f62f824c
+                planIds:
+                  type: array
+                  items:
+                    type: string
+                  example: ["pln_a23e148584d0463482c961b7f62f824c", "pln_b177473b31d44c3b8a2a365618a3deca"]
+      responses:
+        '200':
+          description: 'customer plan successfully removed'
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Customer"
+        '400':
+          description: 'invalid input, object invalid'
+        '401':
+          description: 'unauthorized'
+
+  /customers/{customerId}/payment_methods/add:
+    post:
+      tags:
+        - customers
+      summary: add a customer payment method
+      operationId: addCustomerPaymentMethod
+      description: |
+        Collect a payment method / credit card for a customer.
+
+        Calling this method creates a short-lived [Stripe Checkout Session](https://stripe.com/payments/checkout) to allow your customers to enter payment method details. This API will return a Stripe URL to which you should redirect your customers to securely add their credit card information. Upon completion, Stripe will redirect back to the provided URLs.
+      parameters:
+        - in: header
+          name: Kable-Client-Id
+          description: Your client ID, found in the dashboard of your Kable account.
+          schema:
+            type: string
+          example: kci_3c90e9ac92c64f31ae8ed84d21e18740
+        - in: header
+          name: Kable-Client-Secret
+          description: Your `LIVE` or `TEST` secret key. Customers exist across all environments, so it does not matter which environment you use to create customers. Each customer will have separate keys for `LIVE` and `TEST` environments of your API.
+          schema:
+            type: string
+          example: sk_test.jI92Cbu0.XeHWdYM1VTLy4oLtGMw8wrmpt5q9d04n
+          required: true
+        - in: path
+          name: customerId
+          description: The identifier for the customer. You can pass in *either* the `customerId` (as defined by Kable) or the `clientId` (as defined by you).
+          schema:
+            type: string
+          example: cus_8276e1ac8ed84d21c64f31ae0082fe
+          required: true
+      requestBody:
+        description: URLs to which to redirect after payment method details are stored in Stripe (and completion of Stripe Checkout Session).
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - successUrl
+                - cancelUrl
+              properties:
+                successUrl:
+                  type: string
+                  example: https://yourcompany.com/signup/complete?success=true
+                cancelUrl:
+                  type: string
+                  example: https://yourcompany.com/signup/failure?success=false
+      responses:
+        '200':
+          description: 'Stripe Checkout Session successfully created to collect customer payment method'
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - url
+                properties:
+                  url:
+                    type: string
+                    example: 'https://checkout.stripe.com/pay/cs_test_c1PJzZEmw9vH1x978D...'
+        '400':
+          description: 'invalid input, customer or company Stripe configuration are invalid'
+        '401':
+          description: 'unauthorized'
+
+
+  /keys/create:
+    post:
+      tags:
+        - keys
+      summary: create a key
+      operationId: createKey
+      description: |
+        Generate a new API key for a customer in a given environment.
+
+        Note that this can also be done through the dashboard.
+
+        Also note that keys are only displayed **once**. When a key is created, the `key` in the response body is the **only** time that key will ever be visible. (When creating keys through the dashboard, keys are also only shown once.)
+      parameters:
+        - in: header
+          name: Kable-Client-Id
+          description: Your client ID, found in the dashboard of your Kable account.
+          schema:
+            type: string
+          example: kci_3c90e9ac92c64f31ae8ed84d21e18740
+          required: true
+        - in: header
+          name: Kable-Client-Secret
+          description: Your `LIVE` or `TEST` secret key, depending on the environment in which the key is being created.
+          schema:
+            type: string
+          example: sk_test.jI92Cbu0.XeHWdYM1VTLy4oLtGMw8wrmpt5q9d04n
+          required: true
+      requestBody:
+        description: The customer and environment for which to create key
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - clientId
+                - environment
+              properties:
+                clientId:
+                  type: string
+                  example: 'yourcompanyuser_1234567890'
+                environment:
+                  type: string
+                  example: "TEST"
+      responses:
+        '200':
+          description: 'new key successfully created'
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - clientId
+                  - environment
+                  - key
+                properties:
+                  clientId:
+                    type: string
+                    example: 'yourcompanyuser_1234567890'
+                  environment:
+                    type: string
+                    example: "TEST"
+                  key:
+                    type: string
+                    example: "sk_test.M1VTLy4o.qAbs56udYLtGMw6war2gImpt5qjI92Ck"
+                  created:
+                    type: string
+                    example: '2022-01-09'
+        '400':
+          description: 'invalid input, object invalid'
+        '401':
+          description: 'unauthorized'
+
+  /keys/revoke:
+    post:
+      tags:
+        - keys
+      summary: revoke a key(s)
+      operationId: revokeKey
+      description: |
+        Revoke an API key (or keys) from a customer in a given environment
+
+        Note that this can also be done through the dashboard.
+      parameters:
+        - in: header
+          name: Kable-Client-Id
+          description: Your client ID, found in the dashboard of your Kable account.
+          schema:
+            type: string
+          example: kci_3c90e9ac92c64f31ae8ed84d21e18740
+          required: true
+        - in: header
+          name: Kable-Client-Secret
+          description: Your `LIVE` or `TEST` secret key, depending on the environment in which the key is being created.
+          schema:
+            type: string
+          example: sk_test.jI92Cbu0.XeHWdYM1VTLy4oLtGMw8wrmpt5q9d04n
+          required: true
+
+      requestBody:
+        description: |
+          The customer and environment for which to revoke key(s).
+
+          By default, all keys for a given customer and environment are revoked. To revoke an individual key, include the optional `key` parameter to revoke a single, specified key.
+
+          By default, revoked keys are useable for 10 minutes following revocation (to give developers time to update configurations). To revoke a key(s) immediately, use the optional `immediately` parameter.
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - clientId
+                - environment
+              properties:
+                clientId:
+                  type: string
+                  example: 'yourcompanyuser_1234567890'
+                environment:
+                  type: string
+                  example: TEST
+                key:
+                  type: string
+                  example: 'sk_test.M1VTLy4o.qAbs56udYLtGMw6war2gImpt5qjI92Ck'
+                immediately:
+                  type: boolean
+                  example: false
+      responses:
+        '200':
+          description: 'key(s) successfully revoked'
+        '400':
+          description: 'invalid input, object invalid'
+        '401':
+          description: 'unauthorized'
+
+  /events/create:
+    post:
+      tags:
+        - events
+      summary: record events
+      operationId: createEvents
+      description: |
+        Record information about something that happened in your API.
+
+        Kable uses events to perform metering and usage-based billing calculations.
+      parameters:
+        - in: header
+          name: Kable-Client-Id
+          description: Your client ID, found in the dashboard of your Kable account.
+          schema:
+            type: string
+          example: kci_3c90e9ac92c64f31ae8ed84d21e18740
+          required: true
+        - in: header
+          name: Kable-Client-Secret
+          description: Your `LIVE` or `TEST` secret key, depending on the environment in which the key is being created.
+          schema:
+            type: string
+          example: sk_test.jI92Cbu0.XeHWdYM1VTLy4oLtGMw8wrmpt5q9d04n
+          required: true
+      requestBody:
+        description: Events containing information about things that happened in your API
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/Event'
+      responses:
+        '200':
+          description: 'events successfully recorded'
+        '400':
+          description: 'invalid input, object invalid'
+        '401':
+          description: 'unauthorized'
+
+  /metrics/get:
+    post:
+      tags:
+        - metrics
+      summary: get metric
+      operationId: getMetric
+      description: Retrieve a usage metric for a given dimension from Kable.
+      parameters:
+        - in: header
+          name: Kable-Client-Id
+          description: Your client ID, found in the dashboard of your Kable account.
+          schema:
+            type: string
+          example: kci_3c90e9ac92c64f31ae8ed84d21e18740
+          required: true
+        - in: header
+          name: Kable-Client-Secret
+          description: Your `LIVE` or `TEST` secret key, depending on the environment in which the key is being created.
+          schema:
+            type: string
+          example: sk_test.jI92Cbu0.XeHWdYM1VTLy4oLtGMw8wrmpt5q9d04n
+          required: true
+      requestBody:
+        description: Parameters of the metrics query you'd like to run.
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - aggregation
+                - startDate
+                - endDate
+              properties:
+                dimensionId:
+                  type: string
+                  example: "dim_c5f32b8cd8934356b5167a3b2c6c6314"
+                  description: Note that either `dimensionId` or `dimensionKey` is required.
+                dimensionKey:
+                  type: string
+                  example: "userId"
+                  description: Note that either `dimensionId` or `dimensionKey` is required.
+                aggregation:
+                  type: string
+                  example: "COUNT_DISTINCT"
+                  description: Valid values are `COUNT`, `COUNT_DISTINCT`, and `SUM`.
+                startDate:
+                  type: string
+                  format: date-time
+                  description: "Start of the period over which to query. Timestamps must be formatted as RFC 3339 strings like `2022-01-09T09:32:01Z`"
+                endDate:
+                  type: string
+                  format: date-time
+                  description: "End of the period over which to query. Timestamps must be formatted as RFC 3339 strings like `2022-01-09T09:32:01Z`"
+                clientId:
+                  type: string
+                  example: 'yourcompanyuser_1234567890'
+                  description: When provided, query will consider only this customer. When `null`, query will consider all of your customers.
+      responses:
+        '200':
+          description: queried usage metric
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - dimensionId
+                  - total
+                properties:
+                  dimensionId:
+                    type: string
+                    example: 'dim_c5f32b8cd8934356b5167a3b2c6c6314'
+                    description: The dimension that was queried
+                  total:
+                    type: integer
+                    example: 45284
+                    description: The total count for the requested query
+        '400':
+          description: 'invalid input, object invalid'
+        '401':
+          description: 'unauthorized'
+
+  /tokens/create:
+    post:
+      tags:
+        - tokens
+      summary: create a token
+      operationId: createToken
+      description: |
+        Generate a new access token for embedding Kable dashboards within your developer portal.
+      parameters:
+        - in: header
+          name: Kable-Client-Id
+          description: Your client ID, found in the dashboard of your Kable account.
+          schema:
+            type: string
+          example: kci_3c90e9ac92c64f31ae8ed84d21e18740
+          required: true
+        - in: header
+          name: Kable-Client-Secret
+          description: Your `LIVE` or `TEST` secret key, depending on the environment in which the key is being created.
+          schema:
+            type: string
+          example: sk_test.jI92Cbu0.XeHWdYM1VTLy4oLtGMw8wrmpt5q9d04n
+          required: true
+      requestBody:
+        description: The customer `clientId` for which to grant data access permissions to the token
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - clientId
+              properties:
+                clientId:
+                  type: string
+                  example: 'yourcompanyuser_1234567890'
+      responses:
+        '200':
+          description: 'new key successfully created'
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - token
+                properties:
+                  token:
+                    type: string
+                    example: '30e8c05f9add4ebeaab3ab2f42bdde31'
+        '400':
+          description: 'invalid input, object invalid'
+        '401':
+          description: 'unauthorized'
+
+
+externalDocs:
+  description: Find out more about the Kable API
+  url: 'https://kable.stoplight.io/docs/kable'
+
+
+components:
+  schemas:
+    Event:
+      type: object
+      properties:
+        environment:
+          type: string
+          enum:
+            - LIVE
+            - TEST
+        kableClientId:
+          type: string
+        customerId:
+          type: string
+        clientId:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+          description: "Timestamps must be formatted as RFC 3339 strings like `2022-01-09T09:32:01Z`"
+        data:
+          type: object
+          example: { "userId": "xyz123", "transactionId": "tx00000abcde", "countOfSomethingInteresting": 10, "totalCost": 399.99 }
+          description: |
+            `data` is a JSON-formatted object containing key-value pairs of information to be tracked by Kable.
+
+            You should **always** include a `clientId` so that Kable can accurately attribute events to your customers.
+
+            Any additional fields you pass (`userId`, `transactionId`, `countOfSomethingImportant`, etc) can be defined as Dimensions on Kable and used for billing purposes.
+    Customer:
+      type: object
+      required:
+        - customerId
+        - clientId
+        - companyName
+        - created
+      properties:
+        kableClientId:
+          type: string
+          example: 'kci_3c90e9ac92c64f31ae8ed84d21e18740'
+        customerId:
+          type: string
+          example: 'cus_8276e1ac8ed84d21c64f31ae0082fe'
+        clientId:
+          type: string
+          example: 'yourcompanyuser_1234567890'
+        companyName:
+          type: string
+          example: 'Awesome Corp'
+        status:
+          type: string
+          enum:
+            - ACTIVE
+            - CANCELLED
+          example: "ACTIVE"
+        stripeCustomerId:
+          type: string
+          example: 'cus_a91565WBFwU30c'
+        created:
+          type: string
+          example: '2022-01-09T10:42:44.588Z'
+        modified:
+          type: string
+          example: '2022-01-09T10:42:44.588Z'
+        plans:
+          type: array
+          items:
+            $ref: "#/components/schemas/CustomerPlan"
+    CustomerPlan:
+      type: object
+      required:
+        - planId
+        - dimensionId
+        - startDate
+      properties:
+        planId:
+          type: string
+          example: 'pln_a23e148584d0463482c961b7f62f824c'
+        dimensionId:
+          type: string
+          example: 'dim_c5f32b8cd8934356b5167a3b2c6c6314'
+        startDate:
+          type: string
+          example: '2022-01-09T10:42:44.588Z'
+        endDate:
+          type: string
+          example: '2023-01-09T10:42:44.588Z'
+        nextInvoiceDate:
+          type: string
+          example: '2022-02-09T10:42:44.588Z'
+        nextPlanId:
+          type: string
+          example: 'pln_c1a443dedf8d459c975ed29b2c0d745e'
+    Key:
+      type: object
+      properties:
+        environment:
+          type: string
+          enum:
+            - LIVE
+            - TEST
+          example: "TEST"
+        clientId:
+          type: string
+          example: "yourcompanyuser_1234567890"
+        key:
+          type: string
+          example: "sk_test.jI92Cbu0.XeHWdYM1VTLy4oLtGMw8wrmpt5q9d04n"
+        created:
+          type: string
+          format: date-time
+          example: "2022-01-09"
