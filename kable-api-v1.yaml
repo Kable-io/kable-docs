@@ -928,7 +928,7 @@ components:
       required:
         - planId
         - dimensionId
-        - startDate
+        - addedDate
       properties:
         planId:
           type: string
@@ -936,15 +936,22 @@ components:
         dimensionId:
           type: string
           example: 'dim_c5f32b8cd8934356b5167a3b2c6c6314'
-        startDate:
+        addedDate:
           type: string
-          example: '2022-01-09T10:42:44.588Z'
-        endDate:
+          description: date plan was added to customer
+          example: '2022-01-09T00:00:00.000Z'
+        endedDate:
           type: string
-          example: '2023-01-09T10:42:44.588Z'
-        nextInvoiceDate:
+          description: date plan ends (provided for free trials and pilots)
+          example: '2022-02-09T00:00:00.000Z'
+        periodStartDate:
           type: string
-          example: '2022-02-09T10:42:44.588Z'
+          description: date current invoice cycle began
+          example: '2022-01-09T00:00:00.000Z'
+        periodEndDate:
+          type: string
+          description: date current invoice cycle ends
+          example: '2022-02-09T00:00:00.000Z'
         nextPlanId:
           type: string
           example: 'pln_c1a443dedf8d459c975ed29b2c0d745e'
