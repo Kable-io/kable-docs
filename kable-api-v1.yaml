@@ -218,6 +218,9 @@ paths:
                 companyName:
                   type: string
                   example: Awesome Corp
+                currency:
+                  type: string
+                  example: USD
                 stripeCustomerId:
                   type: string
                   example: cus_a91565WBFwU30c
@@ -238,6 +241,9 @@ paths:
                   - clientId
                   - companyName
                 properties:
+                  kableClientId:
+                    type: string
+                    example: 'kci_3c90e9ac92c64f31ae8ed84d21e18740'
                   customerId:
                     type: string
                     example: 'cus_8276e1ac8ed84d21c64f31ae0082fe'
@@ -247,16 +253,35 @@ paths:
                   companyName:
                     type: string
                     example: 'Awesome Corp'
+                  currency:
+                    type: string
+                    example: 'USD'
+                  status:
+                    type: string
+                    enum:
+                      - ACTIVE
+                      - CANCELLED
+                    example: "ACTIVE"
+                  nextInvoiceDate:
+                    type: string
+                    example: '2022-02-09T00:00:00.000Z'
                   stripeCustomerId:
                     type: string
-                    example: cus_a91565WBFwU30c
+                    example: 'cus_a91565WBFwU30c'
+                  # created:
+                  #   type: string
+                  #   example: '2022-01-09T10:42:44.588Z'
+                  # modified:
+                  #   type: string
+                  #   example: '2022-01-09T10:42:44.588Z'
+                  plans:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/CustomerPlan"
                   keys:
                     type: array
                     items:
                       $ref: "#/components/schemas/Key"
-                  created:
-                    type: string
-                    example: '2022-01-09'
         '400':
           description: 'invalid input, object invalid'
         '401':
@@ -605,9 +630,9 @@ paths:
                   key:
                     type: string
                     example: "sk_test.M1VTLy4o.qAbs56udYLtGMw6war2gImpt5qjI92Ck"
-                  created:
-                    type: string
-                    example: '2022-01-09'
+                  # created:
+                  #   type: string
+                  #   example: '2022-01-09T10:42:44.588Z'
         '400':
           description: 'invalid input, object invalid'
         '401':
@@ -890,7 +915,10 @@ components:
         - customerId
         - clientId
         - companyName
-        - created
+        - currency
+        - status
+        # - created
+        # - modified
       properties:
         kableClientId:
           type: string
@@ -904,21 +932,27 @@ components:
         companyName:
           type: string
           example: 'Awesome Corp'
+        currency:
+          type: string
+          example: 'USD'
         status:
           type: string
           enum:
             - ACTIVE
             - CANCELLED
           example: "ACTIVE"
+        nextInvoiceDate:
+          type: string
+          example: '2022-02-09T00:00:00.000Z'
         stripeCustomerId:
           type: string
           example: 'cus_a91565WBFwU30c'
-        created:
-          type: string
-          example: '2022-01-09T10:42:44.588Z'
-        modified:
-          type: string
-          example: '2022-01-09T10:42:44.588Z'
+        # created:
+        #   type: string
+        #   example: '2022-01-09T10:42:44.588Z'
+        # modified:
+        #   type: string
+        #   example: '2022-01-09T10:42:44.588Z'
         plans:
           type: array
           items:
@@ -957,6 +991,9 @@ components:
           example: 'pln_c1a443dedf8d459c975ed29b2c0d745e'
     Key:
       type: object
+      required:
+        - environment
+        - key
       properties:
         environment:
           type: string
@@ -970,7 +1007,6 @@ components:
         key:
           type: string
           example: "sk_test.jI92Cbu0.XeHWdYM1VTLy4oLtGMw8wrmpt5q9d04n"
-        created:
-          type: string
-          format: date-time
-          example: "2022-01-09"
+        # created:
+        #   type: string
+        #   example: '2022-01-09T10:42:44.588Z'
