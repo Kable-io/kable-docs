@@ -88,6 +88,7 @@ paths:
           schema:
             type: string
           example: kci_3c90e9ac92c64f31ae8ed84d21e18740
+          required: true
         - in: header
           name: Kable-Client-Secret
           description: Your `LIVE` or `TEST` secret key. Customers exist across all environments, so it does not matter which environment you use to fetch customers.
@@ -117,18 +118,12 @@ paths:
         Retrieve a customer.
       parameters:
         - in: header
-          name: Kable-Environment
-          description: The environment for the request. Valid values are `LIVE` and `TEST`.
-          schema:
-            type: string
-          example: TEST
-          required: true
-        - in: header
           name: Kable-Client-Id
           description: Your client ID, found in the dashboard of your Kable account.
           schema:
             type: string
           example: kci_3c90e9ac92c64f31ae8ed84d21e18740
+          required: true
         - in: header
           name: Kable-Client-Secret
           description: Your `LIVE` or `TEST` secret key. Customers exist across all environments, so it does not matter which environment you use to fetch customers.
@@ -174,6 +169,7 @@ paths:
           schema:
             type: string
           example: kci_3c90e9ac92c64f31ae8ed84d21e18740
+          required: true
         - in: header
           name: Kable-Client-Secret
           description: Your `LIVE` or `TEST` secret key. Customers exist across all environments, so it does not matter which environment you use to create customers. Each customer will have separate keys for `LIVE` and `TEST` environments of your API.
@@ -304,6 +300,7 @@ paths:
           schema:
             type: string
           example: kci_3c90e9ac92c64f31ae8ed84d21e18740
+          required: true
         - in: header
           name: Kable-Client-Secret
           description: Your `LIVE` or `TEST` secret key. Customers exist across all environments, so it does not matter which environment you use to create customers. Each customer will have separate keys for `LIVE` and `TEST` environments of your API.
@@ -358,6 +355,7 @@ paths:
           schema:
             type: string
           example: kci_3c90e9ac92c64f31ae8ed84d21e18740
+          required: true
         - in: header
           name: Kable-Client-Secret
           description: Your `LIVE` or `TEST` secret key. Customers exist across all environments, so it does not matter which environment you use to create customers. Each customer will have separate keys for `LIVE` and `TEST` environments of your API.
@@ -401,6 +399,7 @@ paths:
           schema:
             type: string
           example: kci_3c90e9ac92c64f31ae8ed84d21e18740
+          required: true
         - in: header
           name: Kable-Client-Secret
           description: Your `LIVE` or `TEST` secret key. Customers exist across all environments, so it does not matter which environment you use to create customers. Each customer will have separate keys for `LIVE` and `TEST` environments of your API.
@@ -459,6 +458,7 @@ paths:
           schema:
             type: string
           example: kci_3c90e9ac92c64f31ae8ed84d21e18740
+          required: true
         - in: header
           name: Kable-Client-Secret
           description: Your `LIVE` or `TEST` secret key. Customers exist across all environments, so it does not matter which environment you use to create customers. Each customer will have separate keys for `LIVE` and `TEST` environments of your API.
@@ -517,6 +517,7 @@ paths:
           schema:
             type: string
           example: kci_3c90e9ac92c64f31ae8ed84d21e18740
+          required: true
         - in: header
           name: Kable-Client-Secret
           description: Your `LIVE` or `TEST` secret key. Customers exist across all environments, so it does not matter which environment you use to create customers. Each customer will have separate keys for `LIVE` and `TEST` environments of your API.
@@ -570,7 +571,7 @@ paths:
     post:
       tags:
         - keys
-      summary: create a key
+      summary: create a customer API key
       operationId: createKey
       description: |
         Generate a new API key for a customer in a given environment.
@@ -642,7 +643,7 @@ paths:
     post:
       tags:
         - keys
-      summary: revoke a key(s)
+      summary: revoke a customer API key(s)
       operationId: revokeKey
       description: |
         Revoke an API key (or keys) from a customer in a given environment
@@ -698,6 +699,162 @@ paths:
           description: 'invalid input, object invalid'
         '401':
           description: 'unauthorized'
+
+  /dimensions:
+    get:
+      tags:
+        - dimensions
+      summary: get all dimensions
+      operationId: getAllDimensions
+      description: |
+        Retrieve all dimensions.
+      parameters:
+        - in: header
+          name: Kable-Client-Id
+          description: Your client ID, found in the dashboard of your Kable account.
+          schema:
+            type: string
+          example: kci_3c90e9ac92c64f31ae8ed84d21e18740
+          required: true
+        - in: header
+          name: Kable-Client-Secret
+          description: Your `LIVE` or `TEST` secret key. Customers exist across all environments, so it does not matter which environment you use to fetch customers.
+          schema:
+            type: string
+          example: sk_test.jI92Cbu0.XeHWdYM1VTLy4oLtGMw8wrmpt5q9d04n
+          required: true
+      responses:
+        '200':
+          description: 'information about your dimensions'
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Dimension"
+        '401':
+          description: 'unauthorized'
+
+  /dimensions/{dimensionId}:
+    get:
+      tags:
+        - dimensions
+      summary: get dimension
+      operationId: getDimension
+      description: |
+        Retrieve a dimension.
+      parameters:
+        - in: header
+          name: Kable-Client-Id
+          description: Your client ID, found in the dashboard of your Kable account.
+          schema:
+            type: string
+          example: kci_3c90e9ac92c64f31ae8ed84d21e18740
+          required: true
+        - in: header
+          name: Kable-Client-Secret
+          description: Your `LIVE` or `TEST` secret key. Customers exist across all environments, so it does not matter which environment you use to fetch customers.
+          schema:
+            type: string
+          example: sk_test.jI92Cbu0.XeHWdYM1VTLy4oLtGMw8wrmpt5q9d04n
+          required: true
+        - in: path
+          name: dimensionId
+          description: The identifier for the dimension. You can pass in *either* the `dimensionId` (as defined by Kable) or the `key` (as defined by you).
+          schema:
+            type: string
+          example: userId
+          required: true
+      responses:
+        '200':
+          description: 'information about your dimension'
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Dimension"
+        '401':
+          description: 'unauthorized'
+        '404':
+          description: 'not found'
+
+
+  /plans:
+    get:
+      tags:
+        - plans
+      summary: get all plans
+      operationId: getAllPlans
+      description: |
+        Retrieve all plans.
+      parameters:
+        - in: header
+          name: Kable-Client-Id
+          description: Your client ID, found in the dashboard of your Kable account.
+          schema:
+            type: string
+          example: kci_3c90e9ac92c64f31ae8ed84d21e18740
+          required: true
+        - in: header
+          name: Kable-Client-Secret
+          description: Your `LIVE` or `TEST` secret key. Customers exist across all environments, so it does not matter which environment you use to fetch customers.
+          schema:
+            type: string
+          example: sk_test.jI92Cbu0.XeHWdYM1VTLy4oLtGMw8wrmpt5q9d04n
+          required: true
+      responses:
+        '200':
+          description: 'information about your plans'
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Plan"
+        '401':
+          description: 'unauthorized'
+
+  /plans/{planId}:
+    get:
+      tags:
+        - plans
+      summary: get plan
+      operationId: getPlan
+      description: |
+        Retrieve a plan.
+      parameters:
+        - in: header
+          name: Kable-Client-Id
+          description: Your client ID, found in the dashboard of your Kable account.
+          schema:
+            type: string
+          example: kci_3c90e9ac92c64f31ae8ed84d21e18740
+          required: true
+        - in: header
+          name: Kable-Client-Secret
+          description: Your `LIVE` or `TEST` secret key. Customers exist across all environments, so it does not matter which environment you use to fetch customers.
+          schema:
+            type: string
+          example: sk_test.jI92Cbu0.XeHWdYM1VTLy4oLtGMw8wrmpt5q9d04n
+          required: true
+        - in: path
+          name: planId
+          description: The identifier for the plan.
+          schema:
+            type: string
+          example: userId
+          required: true
+      responses:
+        '200':
+          description: 'information about your plan'
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Plan"
+        '401':
+          description: 'unauthorized'
+        '404':
+          description: 'not found'
+
 
   /events/create:
     post:
@@ -909,6 +1066,47 @@ components:
             You should **always** include a `clientId` so that Kable can accurately attribute events to your customers.
 
             Any additional fields you pass (`userId`, `transactionId`, `countOfSomethingImportant`, etc) can be defined as Dimensions on Kable and used for billing purposes.
+    Dimension:
+      type: object
+      required:
+        - dimensionId
+        - key
+        - name
+      properties:
+        dimensionId:
+          type: string
+          example: 'dim_adbd19f2dc6b464c959b6d9c161078bc'
+        key:
+          type: string
+          example: 'userId'
+        name:
+          type: string
+          example: 'User'
+    Plan:
+      type: object
+      required:
+        - planId
+        - dimensionId
+        - name
+      properties:
+        planId:
+          type: string
+          example: 'pln_a23e148584d0463482c961b7f62f824c'
+        dimensionId:
+          type: string
+          example: 'dim_c5f32b8cd8934356b5167a3b2c6c6314'
+        name:
+          type: string
+          example: 'Requests Usage Plan'
+        description:
+          type: string
+          example: 'A usage plan based on the number of API requests'
+        nickname:
+          type: string
+          example: 'requests_usage_v1'
+        nextPlanId:
+          type: string
+          example: 'pln_c1a443dedf8d459c975ed29b2c0d745e'
     Customer:
       type: object
       required:
@@ -917,8 +1115,6 @@ components:
         - companyName
         - currency
         - status
-        # - created
-        # - modified
       properties:
         kableClientId:
           type: string
@@ -947,12 +1143,6 @@ components:
         stripeCustomerId:
           type: string
           example: 'cus_a91565WBFwU30c'
-        # created:
-        #   type: string
-        #   example: '2022-01-09T10:42:44.588Z'
-        # modified:
-        #   type: string
-        #   example: '2022-01-09T10:42:44.588Z'
         plans:
           type: array
           items:
@@ -962,6 +1152,7 @@ components:
       required:
         - planId
         - dimensionId
+        - name
         - addedDate
       properties:
         planId:
@@ -970,6 +1161,15 @@ components:
         dimensionId:
           type: string
           example: 'dim_c5f32b8cd8934356b5167a3b2c6c6314'
+        name:
+          type: string
+          example: 'Requests Usage Plan'
+        description:
+          type: string
+          example: 'A usage plan based on the number of API requests'
+        nickname:
+          type: string
+          example: 'requests_usage_v1'
         addedDate:
           type: string
           description: date plan was added to customer
@@ -1007,6 +1207,3 @@ components:
         key:
           type: string
           example: "sk_test.jI92Cbu0.XeHWdYM1VTLy4oLtGMw8wrmpt5q9d04n"
-        # created:
-        #   type: string
-        #   example: '2022-01-09T10:42:44.588Z'
