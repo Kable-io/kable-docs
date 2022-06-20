@@ -1041,6 +1041,9 @@ components:
   schemas:
     Event:
       type: object
+      required:
+        - clientId
+        - timestamp
       properties:
         environment:
           type: string
@@ -1048,8 +1051,6 @@ components:
             - LIVE
             - TEST
         kableClientId:
-          type: string
-        customerId:
           type: string
         clientId:
           type: string
