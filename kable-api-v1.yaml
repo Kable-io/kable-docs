@@ -897,12 +897,94 @@ paths:
         '401':
           description: 'unauthorized'
 
-  /metrics/get:
+  # # DEPRECATED #
+  # /metrics/get:
+  #   post:
+  #     tags:
+  #       - metrics
+  #     summary: get metric
+  #     operationId: getMetric
+  #     description: Retrieve a usage metric for a given dimension from Kable.
+  #     parameters:
+  #       - in: header
+  #         name: Kable-Client-Id
+  #         description: Your client ID, found in the dashboard of your Kable account.
+  #         schema:
+  #           type: string
+  #         example: kci_3c90e9ac92c64f31ae8ed84d21e18740
+  #         required: true
+  #       - in: header
+  #         name: Kable-Client-Secret
+  #         description: Your `LIVE` or `TEST` secret key, depending on the environment in which the key is being created.
+  #         schema:
+  #           type: string
+  #         example: sk_test.jI92Cbu0.XeHWdYM1VTLy4oLtGMw8wrmpt5q9d04n
+  #         required: true
+  #     requestBody:
+  #       description: Parameters of the metrics query you'd like to run.
+  #       content:
+  #         application/json:
+  #           schema:
+  #             type: object
+  #             required:
+  #               - aggregation
+  #               - startDate
+  #               - endDate
+  #             properties:
+  #               dimensionId:
+  #                 type: string
+  #                 example: "dim_c5f32b8cd8934356b5167a3b2c6c6314"
+  #                 description: Note that either `dimensionId` or `dimensionKey` is required.
+  #               dimensionKey:
+  #                 type: string
+  #                 example: "userId"
+  #                 description: Note that either `dimensionId` or `dimensionKey` is required.
+  #               aggregation:
+  #                 type: string
+  #                 example: "COUNT_DISTINCT"
+  #                 description: Valid values are `COUNT`, `COUNT_DISTINCT`, and `SUM`.
+  #               startDate:
+  #                 type: string
+  #                 format: date-time
+  #                 description: "Start of the period over which to query. Timestamps must be formatted as RFC 3339 strings like `2022-01-09T09:32:01Z`"
+  #               endDate:
+  #                 type: string
+  #                 format: date-time
+  #                 description: "End of the period over which to query. Timestamps must be formatted as RFC 3339 strings like `2022-01-09T09:32:01Z`"
+  #               clientId:
+  #                 type: string
+  #                 example: 'yourcompanyuser_1234567890'
+  #                 description: When provided, query will consider only this customer. When `null`, query will consider all of your customers.
+  #     responses:
+  #       '200':
+  #         description: queried usage metric
+  #         content:
+  #           application/json:
+  #             schema:
+  #               type: object
+  #               required:
+  #                 - dimensionId
+  #                 - total
+  #               properties:
+  #                 dimensionId:
+  #                   type: string
+  #                   example: 'dim_c5f32b8cd8934356b5167a3b2c6c6314'
+  #                   description: The dimension that was queried
+  #                 total:
+  #                   type: number
+  #                   example: 45284
+  #                   description: The total usage for the requested query
+  #       '400':
+  #         description: 'invalid input, object invalid'
+  #       '401':
+  #         description: 'unauthorized'
+
+  /usage/get:
     post:
       tags:
-        - metrics
-      summary: get metric
-      operationId: getMetric
+        - usage
+      summary: get usage metrics
+      operationId: getUsage
       description: Retrieve a usage metric for a given dimension from Kable.
       parameters:
         - in: header
@@ -920,7 +1002,7 @@ paths:
           example: sk_test.jI92Cbu0.XeHWdYM1VTLy4oLtGMw8wrmpt5q9d04n
           required: true
       requestBody:
-        description: Parameters of the metrics query you'd like to run.
+        description: Parameters of the usage metrics query to execute.
         content:
           application/json:
             schema:
@@ -929,50 +1011,45 @@ paths:
                 - aggregation
                 - startDate
                 - endDate
+                - interval
               properties:
-                dimensionId:
-                  type: string
-                  example: "dim_c5f32b8cd8934356b5167a3b2c6c6314"
-                  description: Note that either `dimensionId` or `dimensionKey` is required.
-                dimensionKey:
-                  type: string
-                  example: "userId"
-                  description: Note that either `dimensionId` or `dimensionKey` is required.
                 aggregation:
                   type: string
                   example: "COUNT_DISTINCT"
                   description: Valid values are `COUNT`, `COUNT_DISTINCT`, and `SUM`.
+                dimensionId:
+                  type: string
+                  example: "dim_c5f32b8cd8934356b5167a3b2c6c6314"
+                  description: Note that one of either `dimensionId` or `dimensionKey` is required, though either may be provided.
+                dimensionKey:
+                  type: string
+                  example: "userId"
+                  description: Note that one of either `dimensionId` or `dimensionKey` is required, though either may be provided.
                 startDate:
                   type: string
                   format: date-time
+                  example: "2022-03-01T00:00:00Z"
                   description: "Start of the period over which to query. Timestamps must be formatted as RFC 3339 strings like `2022-01-09T09:32:01Z`"
                 endDate:
                   type: string
                   format: date-time
+                  example: "2022-04-01T00:00:00Z"
                   description: "End of the period over which to query. Timestamps must be formatted as RFC 3339 strings like `2022-01-09T09:32:01Z`"
+                interval:
+                  type: string
+                  example: "DAY"
+                  description: Valid values are `HOUR`, `DAY`, and `MONTH`.
                 clientId:
                   type: string
                   example: 'yourcompanyuser_1234567890'
                   description: When provided, query will consider only this customer. When `null`, query will consider all of your customers.
       responses:
         '200':
-          description: queried usage metric
+          description: usage metrics
           content:
             application/json:
               schema:
-                type: object
-                required:
-                  - dimensionId
-                  - total
-                properties:
-                  dimensionId:
-                    type: string
-                    example: 'dim_c5f32b8cd8934356b5167a3b2c6c6314'
-                    description: The dimension that was queried
-                  total:
-                    type: integer
-                    example: 45284
-                    description: The total count for the requested query
+                $ref: "#/components/schemas/UsageMetricResponse"
         '400':
           description: 'invalid input, object invalid'
         '401':
@@ -1076,7 +1153,7 @@ components:
       properties:
         dimensionId:
           type: string
-          example: 'dim_adbd19f2dc6b464c959b6d9c161078bc'
+          example: 'dim_c5f32b8cd8934356b5167a3b2c6c6314'
         key:
           type: string
           example: 'userId'
@@ -1208,3 +1285,67 @@ components:
         key:
           type: string
           example: "sk_test.jI92Cbu0.XeHWdYM1VTLy4oLtGMw8wrmpt5q9d04n"
+    UsageMetricResponse:
+      type: object
+      required:
+        - startDate
+        - endDate
+        - intervals
+      properties:
+        # aggregation:
+        #   type: string
+        #   example: "COUNT_DISTINCT"
+        #   description: Valid values are `COUNT`, `COUNT_DISTINCT`, and `SUM`.
+        startDate:
+          type: string
+          format: date-time
+          example: "2022-03-01T00:00:00Z"
+          description: "Start of the period over which to query. Timestamps must be formatted as RFC 3339 strings like `2022-01-09T09:32:01Z`"
+        endDate:
+          type: string
+          format: date-time
+          example: "2022-04-01T00:00:00Z"
+          description: "End of the period over which to query. Timestamps must be formatted as RFC 3339 strings like `2022-01-09T09:32:01Z`"
+        # interval:
+        #   type: string
+        #   example: "DAY"
+        #   description: Valid values are `HOUR`, `DAY`, and `MONTH`.
+        dimension:
+          $ref: "#/components/schemas/Dimension"
+
+        clientId:
+          type: string
+          example: 'yourcompanyuser_1234567890'
+          description: When provided, query will consider only this customer. When `null`, query will consider all of your customers.
+        intervals:
+          type: array
+          items:
+            $ref: "#/components/schemas/UsageMetricInterval"
+
+    UsageMetricInterval:
+      type: object
+      required:
+        - intervalStart
+        - intervalEnd
+        - total
+      properties:
+        intervalStart:
+          type: string
+          format: date-time
+          example: "2022-03-01T00:00:00Z"
+          description: "Start of the interval"
+        intervalEnd:
+          type: string
+          format: date-time
+          example: "2022-03-02T00:00:00Z"
+          description: "End of the interval"
+        dimension:
+          $ref: "#/components/schemas/Dimension"
+        clientId:
+          type: string
+          example: 'yourcompanyuser_1234567890'
+          description: When provided, query will consider only this customer. When `null`, query will consider all of your customers.
+        total:
+          type: number
+          example: 2749
+          description: The total usage for the requested interval
