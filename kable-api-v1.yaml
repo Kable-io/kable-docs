@@ -260,6 +260,7 @@ paths:
                     example: "ACTIVE"
                   nextInvoiceDate:
                     type: string
+                    format: date-time
                     example: '2022-02-09T00:00:00.000Z'
                   stripeCustomerId:
                     type: string
@@ -1122,28 +1123,20 @@ components:
         - clientId
         - timestamp
       properties:
-        environment:
-          type: string
-          enum:
-            - LIVE
-            - TEST
-        kableClientId:
-          type: string
         clientId:
           type: string
+          description: "Your customer's client ID (as defined by you during customer creation). This is how Kable attributes events to a given customer."
         timestamp:
           type: string
           format: date-time
-          description: "Timestamps must be formatted as RFC 3339 strings like `2022-01-09T09:32:01Z`"
+          description: "When the event occurred. Timestamps must be formatted as RFC 3339 strings like `2022-01-09T09:32:01Z`."
         data:
           type: object
           example: { "userId": "xyz123", "transactionId": "tx00000abcde", "countOfSomethingInteresting": 10, "totalCost": 399.99 }
           description: |
-            `data` is a JSON-formatted object containing key-value pairs of information to be tracked by Kable.
+            `data` is a JSON-formatted object containing key-value pairs of information to be tracked by Kable. The keys provided in the `data` JSON correspond to the Dimensions you've defined on Kable.
 
-            You should **always** include a `clientId` so that Kable can accurately attribute events to your customers.
-
-            Any additional fields you pass (`userId`, `transactionId`, `countOfSomethingImportant`, etc) can be defined as Dimensions on Kable and used for billing purposes.
+            When using a Kable library, you must **always** include a `clientId` in the `record` payload so that Kable can accurately attribute events to your customers.
     Dimension:
       type: object
       required:
@@ -1154,12 +1147,15 @@ components:
         dimensionId:
           type: string
           example: 'dim_c5f32b8cd8934356b5167a3b2c6c6314'
+          description: "A Kable-defined identifier for the dimension."
         key:
           type: string
           example: 'userId'
+          description: "An identifier for the dimension defined by you. This key corresponds to the key in the JSON payload of a usage event, and can be passed into the `record` library method."
         name:
           type: string
           example: 'User'
+          description: "A human-readable name for the dimension, visible on dashboards, invoices, and reports."
     Plan:
       type: object
       required:
@@ -1170,21 +1166,27 @@ components:
         planId:
           type: string
           example: 'pln_a23e148584d0463482c961b7f62f824c'
+          description: "A Kable-defined identifier for the plan."
         dimensionId:
           type: string
           example: 'dim_c5f32b8cd8934356b5167a3b2c6c6314'
+          description: "An identifier of the dimension along which usage is aggregated in this plan."
         name:
           type: string
           example: 'Requests Usage Plan'
+          description: "A human-readable name for the plan, visible on dashboards, invoices, and reports."
         description:
           type: string
           example: 'A usage plan based on the number of API requests'
+          description: "A human-readable description for the plan, visible on dashboards, invoices, and reports."
         nickname:
           type: string
           example: 'requests_usage_v1'
+          description: An additional identifier for the plan, defined by you, that is *not* visible to customers. If you have different *Monthly Active Users Plan*s for different cohorts of customers, this is a useful place to differentiate those.
         nextPlanId:
           type: string
           example: 'pln_c1a443dedf8d459c975ed29b2c0d745e'
+          description: An optional identifier of any "next" plan after the termination of a free trials or pilot programs.
     Customer:
       type: object
       required:
@@ -1197,34 +1199,43 @@ components:
         kableClientId:
           type: string
           example: 'kci_3c90e9ac92c64f31ae8ed84d21e18740'
+          description: "Your company's Kable client ID."
         customerId:
           type: string
           example: 'cus_8276e1ac8ed84d21c64f31ae0082fe'
+          description: "A Kable-defined identifier for the customer."
         clientId:
           type: string
           example: 'yourcompanyuser_1234567890'
+          description: "A unique identifier for the customer, defined by you. This usually corresponds to your own internal unique identifier for customers, and is the identifier by which Kable attributes customer usage."
         companyName:
           type: string
           example: 'Awesome Corp'
+          description: "The name of the customer, visible on dashboards, invoices, and reports."
         currency:
           type: string
           example: 'USD'
+          description: "The currency with which this customer pays for plans."
         status:
           type: string
           enum:
             - ACTIVE
             - CANCELLED
           example: "ACTIVE"
+          description: "The current status of the customer."
         nextInvoiceDate:
           type: string
           example: '2022-02-09T00:00:00.000Z'
+          description: "The date of the customer's next invoice, if any."
         stripeCustomerId:
           type: string
           example: 'cus_a91565WBFwU30c'
+          description: "The customer's Stripe `customer_id`, if any, for automatic invoice processing through Stripe."
         plans:
           type: array
           items:
             $ref: "#/components/schemas/CustomerPlan"
+          description: "A collection of plans to which this customer is currently subscribed."
     CustomerPlan:
       type: object
       required:
@@ -1236,37 +1247,43 @@ components:
         planId:
           type: string
           example: 'pln_a23e148584d0463482c961b7f62f824c'
+          description: "A Kable-defined identifier for the plan."
         dimensionId:
           type: string
           example: 'dim_c5f32b8cd8934356b5167a3b2c6c6314'
+          description: "An identifier of the dimension along which usage is aggregated in this plan."
         name:
           type: string
           example: 'Requests Usage Plan'
+          description: "A human-readable name for the plan, visible on dashboards, invoices, and reports."
         description:
           type: string
           example: 'A usage plan based on the number of API requests'
+          description: "A human-readable description for the plan, visible on dashboards, invoices, and reports."
         nickname:
           type: string
           example: 'requests_usage_v1'
+          description: An additional identifier for the plan, defined by you, that is *not* visible to customers. If you have different *Monthly Active Users Plan*s for different cohorts of customers, this is a useful place to differentiate those.
         addedDate:
           type: string
-          description: date plan was added to customer
+          description: Date the plan was added to the customer.
           example: '2022-01-09T00:00:00.000Z'
         endedDate:
           type: string
-          description: date plan ends (provided for free trials and pilots)
+          description: Date the plan ended or will end for trials or pilot programs.
           example: '2022-02-09T00:00:00.000Z'
         periodStartDate:
           type: string
-          description: date current invoice cycle began
+          description: Date the current invoice cycle begins.
           example: '2022-01-09T00:00:00.000Z'
         periodEndDate:
           type: string
-          description: date current invoice cycle ends
+          description: Date the current invoice cycle ends.
           example: '2022-02-09T00:00:00.000Z'
         nextPlanId:
           type: string
           example: 'pln_c1a443dedf8d459c975ed29b2c0d745e'
+          description: An optional identifier of any "next" plan after the termination of a free trials or pilot programs.
     Key:
       type: object
       required:
@@ -1279,12 +1296,15 @@ components:
             - LIVE
             - TEST
           example: "TEST"
+          description: The environment to which this key corresponds.
         clientId:
           type: string
           example: "yourcompanyuser_1234567890"
+          description: "The identifier (defined by you) for the customer to which this key belongs."
         key:
           type: string
           example: "sk_test.jI92Cbu0.XeHWdYM1VTLy4oLtGMw8wrmpt5q9d04n"
+          description: "The secret value of the key."
     UsageMetricResponse:
       type: object
       required:
