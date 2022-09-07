@@ -959,6 +959,221 @@ paths:
         "404":
           description: "not found"
 
+  /plans/create:
+    post:
+      tags:
+        - plans
+      summary: create a plan
+      operationId: createPlan
+      description: |
+        Create a plan. Call this to programmatically define a new pricing plan.
+
+        Note that plans can also be created from the Plans tab of your Kable dashboard.
+      parameters:
+        - in: header
+          name: Kable-Client-Id
+          description: Your client ID, found in the dashboard of your Kable account.
+          schema:
+            type: string
+          example: kci_3c90e9ac92c64f31ae8ed84d21e18740
+          required: true
+        - in: header
+          name: Kable-Client-Secret
+          description: Your `LIVE` or `TEST` secret key. Customers exist across all environments, so it does not matter which environment you use to create customers. Each customer will have separate keys for `LIVE` and `TEST` environments of your API.
+          schema:
+            type: string
+          example: sk_test.jI92Cbu0.XeHWdYM1VTLy4oLtGMw8wrmpt5q9d04n
+          required: true
+      requestBody:
+        description: Information about the plan to create.
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - name
+                - type
+                - interval
+                - price
+              properties:
+                name:
+                  type: string
+                  example: "Requests Usage Plan"
+                  description: "A human-readable name for the plan, visible on dashboards, invoices, and reports."
+                description:
+                  type: string
+                  example: "A usage plan based on the number of API requests"
+                  description: "A human-readable description for the plan, visible on dashboards, invoices, and reports."
+                nickname:
+                  type: string
+                  example: "requests_usage_v1"
+                  description: An additional identifier for the plan, defined by you, that is *not* visible to customers. If you have different *Monthly Active Users Plan*s for different cohorts of customers, this is a useful place to differentiate those.
+                type:
+                  type: string
+                  example: "USAGE"
+                  enum:
+                    - USAGE
+                    - SUBSCRIPTION
+                  description: "The type of plan."
+                interval:
+                  type: string
+                  example: "MONTH"
+                  enum:
+                    - MONTH
+                  description: "The billing interval for the plan."
+                dimensionId:
+                  type: string
+                  example: "dim_c5f32b8cd8934356b5167a3b2c6c6314"
+                  description: "An identifier of the dimension along which usage is aggregated in this plan."
+                aggregation:
+                  type: string
+                  example: "COUNT"
+                  description: "The aggregation along which usage metrics are calculated in this plan, relevant only for usage plans."
+                price:
+                  $ref: "#/components/schemas/Price"
+                  description: "The monthly price of the plan."
+      responses:
+        "200":
+          description: "plan successfully created"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Plan"
+        "400":
+          description: "invalid input, object invalid"
+        "401":
+          description: "unauthorized"
+
+  /plans/:planId/update:
+    post:
+      tags:
+        - plans
+      summary: update a plan
+      operationId: updatePlan
+      description: |
+        Update a plan. Call this to programmatically update a pricing plan.
+
+        Note that plans can also be updated from the Plans tab of your Kable dashboard.
+      parameters:
+        - in: header
+          name: Kable-Client-Id
+          description: Your client ID, found in the dashboard of your Kable account.
+          schema:
+            type: string
+          example: kci_3c90e9ac92c64f31ae8ed84d21e18740
+          required: true
+        - in: header
+          name: Kable-Client-Secret
+          description: Your `LIVE` or `TEST` secret key. Customers exist across all environments, so it does not matter which environment you use to create customers. Each customer will have separate keys for `LIVE` and `TEST` environments of your API.
+          schema:
+            type: string
+          example: sk_test.jI92Cbu0.XeHWdYM1VTLy4oLtGMw8wrmpt5q9d04n
+          required: true
+        - in: path
+          name: planId
+          description: The identifier for the plan.
+          schema:
+            type: string
+          example: pln_a23e148584d0463482c961b7f62f824c
+          required: true
+      requestBody:
+        description: Information about the plan to update.
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              properties:
+                name:
+                  type: string
+                  example: "Requests Usage Plan"
+                  description: "A human-readable name for the plan, visible on dashboards, invoices, and reports."
+                description:
+                  type: string
+                  example: "A usage plan based on the number of API requests"
+                  description: "A human-readable description for the plan, visible on dashboards, invoices, and reports."
+                nickname:
+                  type: string
+                  example: "requests_usage_v1"
+                  description: An additional identifier for the plan, defined by you, that is *not* visible to customers. If you have different *Monthly Active Users Plan*s for different cohorts of customers, this is a useful place to differentiate those.
+                type:
+                  type: string
+                  example: "USAGE"
+                  enum:
+                    - USAGE
+                    - SUBSCRIPTION
+                  description: "The type of plan."
+                interval:
+                  type: string
+                  example: "MONTH"
+                  enum:
+                    - MONTH
+                  description: "The billing interval for the plan."
+                dimensionId:
+                  type: string
+                  example: "dim_c5f32b8cd8934356b5167a3b2c6c6314"
+                  description: "An identifier of the dimension along which usage is aggregated in this plan."
+                aggregation:
+                  type: string
+                  example: "COUNT"
+                  description: "The aggregation along which usage metrics are calculated in this plan, relevant only for usage plans."
+                price:
+                  $ref: "#/components/schemas/Price"
+                  description: "The monthly price of the plan."
+      responses:
+        "200":
+          description: "plan successfully updated"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Plan"
+        "400":
+          description: "invalid input, object invalid"
+        "401":
+          description: "unauthorized"
+
+  /plans/:planId/delete:
+    post:
+      tags:
+        - plans
+      summary: delete a plan
+      operationId: deletePlan
+      description: |
+        Delete a plan. Call this to programmatically delete a pricing plan.
+
+        Note that plans can also be updated from the Plans tab of your Kable dashboard.
+
+        You cannot delete a plan to which a customer is actively subscribed.
+      parameters:
+        - in: header
+          name: Kable-Client-Id
+          description: Your client ID, found in the dashboard of your Kable account.
+          schema:
+            type: string
+          example: kci_3c90e9ac92c64f31ae8ed84d21e18740
+          required: true
+        - in: header
+          name: Kable-Client-Secret
+          description: Your `LIVE` or `TEST` secret key. Customers exist across all environments, so it does not matter which environment you use to create customers. Each customer will have separate keys for `LIVE` and `TEST` environments of your API.
+          schema:
+            type: string
+          example: sk_test.jI92Cbu0.XeHWdYM1VTLy4oLtGMw8wrmpt5q9d04n
+          required: true
+        - in: path
+          name: planId
+          description: The identifier for the plan.
+          schema:
+            type: string
+          example: pln_a23e148584d0463482c961b7f62f824c
+          required: true
+      responses:
+        "200":
+          description: "plan successfully deleted"
+        "400":
+          description: "invalid input, object invalid"
+        "401":
+          description: "unauthorized"
+
   /events/create:
     post:
       tags:
@@ -1140,8 +1355,12 @@ paths:
                   description: "End of the period over which to query. Timestamps must be formatted as RFC 3339 strings like `2022-01-09T09:32:01Z`"
                 interval:
                   type: string
+                  enum:
+                    - HOUR
+                    - DAY
+                    - MONTH
                   example: "DAY"
-                  description: Valid values are `HOUR`, `DAY`, and `MONTH`.
+                  description: Timeseries unit duration over which to return intervals.
                 clientId:
                   type: string
                   example: "yourcompanyuser_1234567890"
@@ -1273,10 +1492,6 @@ components:
           type: string
           example: "pln_a23e148584d0463482c961b7f62f824c"
           description: "A Kable-defined identifier for the plan."
-        dimensionId:
-          type: string
-          example: "dim_c5f32b8cd8934356b5167a3b2c6c6314"
-          description: "An identifier of the dimension along which usage is aggregated in this plan."
         name:
           type: string
           example: "Requests Usage Plan"
@@ -1289,10 +1504,35 @@ components:
           type: string
           example: "requests_usage_v1"
           description: An additional identifier for the plan, defined by you, that is *not* visible to customers. If you have different *Monthly Active Users Plan*s for different cohorts of customers, this is a useful place to differentiate those.
-        nextPlanId:
+        type:
           type: string
-          example: "pln_c1a443dedf8d459c975ed29b2c0d745e"
-          description: An optional identifier of any "next" plan after the termination of a free trials or pilot programs.
+          example: "USAGE"
+          enum:
+            - USAGE
+            - SUBSCRIPTION
+          description: "The type of plan."
+        interval:
+          type: string
+          example: "MONTH"
+          enum:
+            - MONTH
+          description: "The billing interval for the plan."
+        dimensionId:
+          type: string
+          example: "dim_c5f32b8cd8934356b5167a3b2c6c6314"
+          description: "An identifier of the dimension along which usage is aggregated in this plan, relevant only for usage plans."
+        aggregation:
+          type: string
+          example: "COUNT"
+          description: "The aggregation along which usage metrics are calculated in this plan, relevant only for usage plans."
+        price:
+          type: object
+          description: "The monthly price of the plan."
+        # nextPlanId:
+        #   type: string
+        #   example: "pln_c1a443dedf8d459c975ed29b2c0d745e"
+        #   description: An optional identifier of any "next" plan after the termination of a free trials or pilot programs.
+
     Customer:
       type: object
       required:
@@ -1342,6 +1582,126 @@ components:
           items:
             $ref: "#/components/schemas/CustomerPlan"
           description: "A collection of plans to which this customer is currently subscribed."
+    Plan:
+      type: object
+      required:
+        - planId
+        - name
+        - planType
+        - interval
+        - price
+        - created
+        - modified
+      properties:
+        planId:
+          type: string
+          example: "pln_a23e148584d0463482c961b7f62f824c"
+          description: "A Kable-defined identifier for the plan."
+        name:
+          type: string
+          example: "Requests Usage Plan"
+          description: "A human-readable name for the plan, visible on dashboards, invoices, and reports."
+        description:
+          type: string
+          example: "A usage plan based on the number of API requests"
+          description: "A human-readable description for the plan, visible on dashboards, invoices, and reports."
+        nickname:
+          type: string
+          example: "requests_usage_v1"
+          description: An additional identifier for the plan, defined by you, that is *not* visible to customers. If you have different *Monthly Active Users Plan*s for different cohorts of customers, this is a useful place to differentiate those.
+        planType:
+          type: string
+          example: "USAGE"
+          enum:
+            - USAGE
+            - SUBSCRIPTION
+          description: "The type of plan."
+        interval:
+          type: string
+          example: "MONTH"
+          enum:
+            - MONTH
+          description: "The billing interval for the plan."
+        dimensionId:
+          type: string
+          example: "dim_c5f32b8cd8934356b5167a3b2c6c6314"
+          description: "An identifier of the dimension along which usage is aggregated in this plan."
+        aggregation:
+          type: string
+          example: "COUNT"
+          description: "The aggregation along which usage metrics are calculated in this plan, relevant only for usage plans."
+        price:
+          $ref: "#/components/schemas/Price"
+          description: "The monthly price of the plan."
+        created:
+          type: string
+          description: Date the plan was created.
+          example: "2022-01-04T00:00:00.000Z"
+        modified:
+          type: string
+          description: Date the plan was last modified.
+          example: "2022-01-04T00:00:00.000Z"
+    Price:
+      type: object
+      required:
+        - currency
+        - tiers
+      properties:
+        currency:
+          type: string
+          enum:
+            - "USD"
+            - "CAD"
+            - "MXN"
+            - "EUR"
+            - "GBP"
+            - "JPY"
+            - "INR"
+            - "CNY"
+            - "AUD"
+            - "NZD"
+          example: "USD"
+          description: "Three-letter currency code."
+        tiers:
+          type: array
+          description: "Price tiers that define price for usage-based plans. Subscription plans will always have prices with a single tier."
+          items:
+            $ref: "#/components/schemas/PriceTier"
+    PriceTier:
+      type: object
+      required:
+        - type
+        - amount
+      properties:
+        type:
+          type: string
+          enum:
+            - "UNIT"
+            - "PACKAGE"
+            - "FLAT"
+            - "MINIMUM"
+            - "MAXIMUM"
+            - "PERCENTAGE"
+            - "SUBSCRIPTION"
+          example: "USD"
+          description: "Price type for the tier."
+        amount:
+          type: number
+          description: "Cost for the tier, evaluated in the context of its associated type."
+          example: 999.99
+        start:
+          type: number
+          description: "The usage metric at which this tier pricing starts."
+          example: 0
+        finish:
+          type: number
+          description: "The usage metric at which this tier pricing ends. A value of -1 represents infinity."
+          example: -1
+        packageSize:
+          type: number
+          description: "The package size, applicable only for package pricing (ie $1 for every 10 requests)."
+          example: 10
+
     CustomerPlan:
       type: object
       required:
