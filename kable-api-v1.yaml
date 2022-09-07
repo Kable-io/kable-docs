@@ -206,20 +206,25 @@ paths:
               properties:
                 clientId:
                   type: string
+                  description: "A unique identifier for the customer, defined by you. This usually corresponds to your own internal unique identifier for customers, and is the identifier by which Kable attributes customer usage."
                   example: yourcompanyuser_1234567890
                 companyName:
                   type: string
+                  description: "The name of the customer, visible on dashboards, invoices, and reports."
                   example: Awesome Corp
                 currency:
                   type: string
+                  description: "The currency with which this customer pays for plans."
                   example: USD
                 stripeCustomerId:
                   type: string
+                  description: "The customer's Stripe `customer_id`, if any, for automatic invoice processing through Stripe."
                   example: cus_a91565WBFwU30c
                 planIds:
                   type: array
                   items:
                     type: string
+                  description: "A collection of plans to which this customer is currently subscribed."
                   example: ["pln_a23e148584d0463482c961b7f62f824c"]
       responses:
         "200":
@@ -321,9 +326,15 @@ paths:
               properties:
                 companyName:
                   type: string
+                  description: "The name of the customer, visible on dashboards, invoices, and reports."
                   example: Awesome Corp
+                currency:
+                  type: string
+                  description: "The currency with which this customer pays for plans."
+                  example: USD
                 stripeCustomerId:
                   type: string
+                  description: "The customer's Stripe `customer_id`, if any, for automatic invoice processing through Stripe."
                   example: cus_a91565WBFwU30c
       responses:
         "200":
@@ -374,6 +385,44 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Customer"
+        "400":
+          description: "invalid input, object invalid"
+        "401":
+          description: "unauthorized"
+
+  /customers/{customerId}/delete:
+    post:
+      tags:
+        - customers
+      summary: delete a customer
+      operationId: deleteCustomer
+      description: |
+        Deleting a customer will erase all record of the customer identity in Kable. This action is irreversible, and should only be used for the purposes of GDPR / CCPA.
+      parameters:
+        - in: header
+          name: Kable-Client-Id
+          description: Your client ID, found in the dashboard of your Kable account.
+          schema:
+            type: string
+          example: kci_3c90e9ac92c64f31ae8ed84d21e18740
+          required: true
+        - in: header
+          name: Kable-Client-Secret
+          description: Your `LIVE` or `TEST` secret key. Customers exist across all environments, so it does not matter which environment you use to create customers. Each customer will have separate keys for `LIVE` and `TEST` environments of your API.
+          schema:
+            type: string
+          example: sk_test.jI92Cbu0.XeHWdYM1VTLy4oLtGMw8wrmpt5q9d04n
+          required: true
+        - in: path
+          name: customerId
+          description: The identifier for the customer. You can pass in *either* the `customerId` (as defined by Kable) or the `clientId` (as defined by you).
+          schema:
+            type: string
+          example: cus_8276e1ac8ed84d21c64f31ae0082fe
+          required: true
+      responses:
+        "200":
+          description: "customer successfully deleted"
         "400":
           description: "invalid input, object invalid"
         "401":
