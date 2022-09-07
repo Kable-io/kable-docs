@@ -1169,7 +1169,6 @@ paths:
           application/json:
             schema:
               type: object
-              required:
               properties:
                 name:
                   type: string
@@ -1547,76 +1546,6 @@ components:
             `data` is a JSON-formatted object containing key-value pairs of information to be tracked by Kable. The keys provided in the `data` JSON correspond to the Dimensions you've defined on Kable.
 
             When using a Kable library, you must **always** include a `clientId` in the `record` payload so that Kable can accurately attribute events to your customers.
-    Dimension:
-      type: object
-      required:
-        - dimensionId
-        - key
-        - name
-      properties:
-        dimensionId:
-          type: string
-          example: "dim_c5f32b8cd8934356b5167a3b2c6c6314"
-          description: "A Kable-defined identifier for the dimension."
-        key:
-          type: string
-          example: "userId"
-          description: "An identifier for the dimension defined by you. This key corresponds to the key in the JSON payload of a usage event, and can be passed into the `record` library method."
-        name:
-          type: string
-          example: "User"
-          description: "A human-readable name for the dimension, visible on dashboards, invoices, and reports."
-    Plan:
-      type: object
-      required:
-        - planId
-        - dimensionId
-        - name
-      properties:
-        planId:
-          type: string
-          example: "pln_a23e148584d0463482c961b7f62f824c"
-          description: "A Kable-defined identifier for the plan."
-        name:
-          type: string
-          example: "Requests Usage Plan"
-          description: "A human-readable name for the plan, visible on dashboards, invoices, and reports."
-        description:
-          type: string
-          example: "A usage plan based on the number of API requests"
-          description: "A human-readable description for the plan, visible on dashboards, invoices, and reports."
-        nickname:
-          type: string
-          example: "requests_usage_v1"
-          description: An additional identifier for the plan, defined by you, that is *not* visible to customers. If you have different *Monthly Active Users Plan*s for different cohorts of customers, this is a useful place to differentiate those.
-        type:
-          type: string
-          example: "USAGE"
-          enum:
-            - USAGE
-            - SUBSCRIPTION
-          description: "The type of plan."
-        interval:
-          type: string
-          example: "MONTH"
-          enum:
-            - MONTH
-          description: "The billing interval for the plan."
-        dimensionId:
-          type: string
-          example: "dim_c5f32b8cd8934356b5167a3b2c6c6314"
-          description: "An identifier of the dimension along which usage is aggregated in this plan, relevant only for usage plans."
-        aggregation:
-          type: string
-          example: "COUNT"
-          description: "The aggregation along which usage metrics are calculated in this plan, relevant only for usage plans."
-        price:
-          type: object
-          description: "The monthly price of the plan."
-        # nextPlanId:
-        #   type: string
-        #   example: "pln_c1a443dedf8d459c975ed29b2c0d745e"
-        #   description: An optional identifier of any "next" plan after the termination of a free trials or pilot programs.
 
     Customer:
       type: object
@@ -1667,16 +1596,35 @@ components:
           items:
             $ref: "#/components/schemas/CustomerPlan"
           description: "A collection of plans to which this customer is currently subscribed."
+
+    Dimension:
+      type: object
+      required:
+        - dimensionId
+        - key
+        - name
+      properties:
+        dimensionId:
+          type: string
+          example: "dim_c5f32b8cd8934356b5167a3b2c6c6314"
+          description: "A Kable-defined identifier for the dimension."
+        key:
+          type: string
+          example: "userId"
+          description: "An identifier for the dimension defined by you. This key corresponds to the key in the JSON payload of a usage event, and can be passed into the `record` library method."
+        name:
+          type: string
+          example: "User"
+          description: "A human-readable name for the dimension, visible on dashboards, invoices, and reports."
+
     Plan:
       type: object
       required:
         - planId
         - name
-        - planType
+        - type
         - interval
         - price
-        - created
-        - modified
       properties:
         planId:
           type: string
@@ -1694,7 +1642,7 @@ components:
           type: string
           example: "requests_usage_v1"
           description: An additional identifier for the plan, defined by you, that is *not* visible to customers. If you have different *Monthly Active Users Plan*s for different cohorts of customers, this is a useful place to differentiate those.
-        planType:
+        type:
           type: string
           example: "USAGE"
           enum:
@@ -1710,7 +1658,7 @@ components:
         dimensionId:
           type: string
           example: "dim_c5f32b8cd8934356b5167a3b2c6c6314"
-          description: "An identifier of the dimension along which usage is aggregated in this plan."
+          description: "An identifier of the dimension along which usage is aggregated in this plan, relevant only for usage plans."
         aggregation:
           type: string
           example: "COUNT"
@@ -1718,14 +1666,11 @@ components:
         price:
           $ref: "#/components/schemas/Price"
           description: "The monthly price of the plan."
-        created:
-          type: string
-          description: Date the plan was created.
-          example: "2022-01-04T00:00:00.000Z"
-        modified:
-          type: string
-          description: Date the plan was last modified.
-          example: "2022-01-04T00:00:00.000Z"
+        # nextPlanId:
+        #   type: string
+        #   example: "pln_c1a443dedf8d459c975ed29b2c0d745e"
+        #   description: An optional identifier of any "next" plan after the termination of a free trials or pilot programs.
+
     Price:
       type: object
       required:
@@ -1752,6 +1697,7 @@ components:
           description: "Price tiers that define price for usage-based plans. Subscription plans will always have prices with a single tier."
           items:
             $ref: "#/components/schemas/PriceTier"
+
     PriceTier:
       type: object
       required:
@@ -1799,10 +1745,6 @@ components:
           type: string
           example: "pln_a23e148584d0463482c961b7f62f824c"
           description: "A Kable-defined identifier for the plan."
-        dimensionId:
-          type: string
-          example: "dim_c5f32b8cd8934356b5167a3b2c6c6314"
-          description: "An identifier of the dimension along which usage is aggregated in this plan."
         name:
           type: string
           example: "Requests Usage Plan"
@@ -1815,6 +1757,10 @@ components:
           type: string
           example: "requests_usage_v1"
           description: An additional identifier for the plan, defined by you, that is *not* visible to customers. If you have different *Monthly Active Users Plan*s for different cohorts of customers, this is a useful place to differentiate those.
+        dimensionId:
+          type: string
+          example: "dim_c5f32b8cd8934356b5167a3b2c6c6314"
+          description: "An identifier of the dimension along which usage is aggregated in this plan."
         addedDate:
           type: string
           description: Date the plan was added to the customer.
@@ -1835,6 +1781,7 @@ components:
           type: string
           example: "pln_c1a443dedf8d459c975ed29b2c0d745e"
           description: An optional identifier of any "next" plan after the termination of a free trials or pilot programs.
+
     Key:
       type: object
       required:
@@ -1856,6 +1803,7 @@ components:
           type: string
           example: "sk_test.jI92Cbu0.XeHWdYM1VTLy4oLtGMw8wrmpt5q9d04n"
           description: "The secret value of the key."
+
     UsageMetricResponse:
       type: object
       required:
