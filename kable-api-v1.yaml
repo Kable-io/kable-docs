@@ -837,9 +837,7 @@ paths:
       summary: create a dimension
       operationId: createDimension
       description: |
-        Create a dimension. Call this to programmatically define a new business metric to use in dashboards and plans.
-
-        Note that dimensions can also be updated manually from within the Dimensions tab of your Kable dashboard.
+        Create a dimension.
       parameters:
         - in: header
           name: Kable-Client-Id
@@ -877,6 +875,99 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Dimension"
+        "400":
+          description: "invalid input, object invalid"
+        "401":
+          description: "unauthorized"
+
+  /dimensions/{dimensionId}/update:
+    post:
+      tags:
+        - dimensions
+      summary: update a dimension
+      operationId: updateDimension
+      description: |
+        Update a dimension.
+      parameters:
+        - in: header
+          name: Kable-Client-Id
+          description: Your client ID, found in the dashboard of your Kable account.
+          schema:
+            type: string
+          example: kci_3c90e9ac92c64f31ae8ed84d21e18740
+          required: true
+        - in: header
+          name: Kable-Client-Secret
+          description: Your `LIVE` or `TEST` secret key. Customers exist across all environments, so it does not matter which environment you use to create customers. Each customer will have separate keys for `LIVE` and `TEST` environments of your API.
+          schema:
+            type: string
+          example: sk_test.jI92Cbu0.XeHWdYM1VTLy4oLtGMw8wrmpt5q9d04n
+          required: true
+        - in: path
+          name: dimensionId
+          description: The identifier for the dimension.
+          schema:
+            type: string
+          example: dim_c5f32b8cd8934356b5167a3b2c6c6314
+          required: true
+      requestBody:
+        description: Information about the dimension to update.
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  description: A human-readable name for the dimension which will be visible in dashboards and on invoices. Dimension names should be singular, not plural (ie "User," not "Users").
+                  example: User
+      responses:
+        "200":
+          description: "dimension successfully updated"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Dimension"
+        "400":
+          description: "invalid input, object invalid"
+        "401":
+          description: "unauthorized"
+
+  /dimensions/{dimensionId}/delete:
+    post:
+      tags:
+        - dimensions
+      summary: delete a dimension
+      operationId: deleteDimension
+      description: |
+        Delete a dimension.
+
+        You cannot delete a dimension if it is in use by a plan.
+      parameters:
+        - in: header
+          name: Kable-Client-Id
+          description: Your client ID, found in the dashboard of your Kable account.
+          schema:
+            type: string
+          example: kci_3c90e9ac92c64f31ae8ed84d21e18740
+          required: true
+        - in: header
+          name: Kable-Client-Secret
+          description: Your `LIVE` or `TEST` secret key. Customers exist across all environments, so it does not matter which environment you use to create customers. Each customer will have separate keys for `LIVE` and `TEST` environments of your API.
+          schema:
+            type: string
+          example: sk_test.jI92Cbu0.XeHWdYM1VTLy4oLtGMw8wrmpt5q9d04n
+          required: true
+        - in: path
+          name: dimensionId
+          description: The identifier for the dimension.
+          schema:
+            type: string
+          example: dim_c5f32b8cd8934356b5167a3b2c6c6314
+          required: true
+      responses:
+        "200":
+          description: "dimension successfully deleted"
         "400":
           description: "invalid input, object invalid"
         "401":
@@ -966,9 +1057,7 @@ paths:
       summary: create a plan
       operationId: createPlan
       description: |
-        Create a plan. Call this to programmatically define a new pricing plan.
-
-        Note that plans can also be created from the Plans tab of your Kable dashboard.
+        Create a plan.
       parameters:
         - in: header
           name: Kable-Client-Id
@@ -1044,16 +1133,14 @@ paths:
         "401":
           description: "unauthorized"
 
-  /plans/:planId/update:
+  /plans/{planId}/update:
     post:
       tags:
         - plans
       summary: update a plan
       operationId: updatePlan
       description: |
-        Update a plan. Call this to programmatically update a pricing plan.
-
-        Note that plans can also be updated from the Plans tab of your Kable dashboard.
+        Update a plan.
       parameters:
         - in: header
           name: Kable-Client-Id
@@ -1132,16 +1219,14 @@ paths:
         "401":
           description: "unauthorized"
 
-  /plans/:planId/delete:
+  /plans/{planId}/delete:
     post:
       tags:
         - plans
       summary: delete a plan
       operationId: deletePlan
       description: |
-        Delete a plan. Call this to programmatically delete a pricing plan.
-
-        Note that plans can also be updated from the Plans tab of your Kable dashboard.
+        Delete a plan.
 
         You cannot delete a plan to which a customer is actively subscribed.
       parameters:
