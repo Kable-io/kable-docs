@@ -620,138 +620,138 @@ paths:
         "401":
           description: "unauthorized"
 
-  /keys/create:
-    post:
-      tags:
-        - keys
-      summary: create a customer API key
-      operationId: createKey
-      description: |
-        Generate a new API key for a customer in a given environment.
+  # /keys/create:
+  #   post:
+  #     tags:
+  #       - keys
+  #     summary: create a customer API key
+  #     operationId: createKey
+  #     description: |
+  #       Generate a new API key for a customer in a given environment.
 
-        Note that this can also be done through the dashboard.
+  #       Note that this can also be done through the dashboard.
 
-        Also note that keys are only displayed **once**. When a key is created, the `key` in the response body is the **only** time that key will ever be visible. (When creating keys through the dashboard, keys are also only shown once.)
-      parameters:
-        - in: header
-          name: Kable-Client-Id
-          description: Your client ID, found in the dashboard of your Kable account.
-          schema:
-            type: string
-          example: kci_3c90e9ac92c64f31ae8ed84d21e18740
-          required: true
-        - in: header
-          name: Kable-Client-Secret
-          description: Your `LIVE` or `TEST` secret key, depending on the environment in which the key is being created.
-          schema:
-            type: string
-          example: sk_test.jI92Cbu0.XeHWdYM1VTLy4oLtGMw8wrmpt5q9d04n
-          required: true
-      requestBody:
-        description: The customer and environment for which to create key
-        content:
-          application/json:
-            schema:
-              type: object
-              required:
-                - clientId
-                - environment
-              properties:
-                clientId:
-                  type: string
-                  example: "yourcompanyuser_1234567890"
-                environment:
-                  type: string
-                  example: "TEST"
-      responses:
-        "200":
-          description: "new key successfully created"
-          content:
-            application/json:
-              schema:
-                type: object
-                required:
-                  - clientId
-                  - environment
-                  - key
-                properties:
-                  clientId:
-                    type: string
-                    example: "yourcompanyuser_1234567890"
-                  environment:
-                    type: string
-                    example: "TEST"
-                  key:
-                    type: string
-                    example: "sk_test.M1VTLy4o.qAbs56udYLtGMw6war2gImpt5qjI92Ck"
-                  # created:
-                  #   type: string
-                  #   example: '2022-01-09T10:42:44.588Z'
-        "400":
-          description: "invalid input, object invalid"
-        "401":
-          description: "unauthorized"
+  #       Also note that keys are only displayed **once**. When a key is created, the `key` in the response body is the **only** time that key will ever be visible. (When creating keys through the dashboard, keys are also only shown once.)
+  #     parameters:
+  #       - in: header
+  #         name: Kable-Client-Id
+  #         description: Your client ID, found in the dashboard of your Kable account.
+  #         schema:
+  #           type: string
+  #         example: kci_3c90e9ac92c64f31ae8ed84d21e18740
+  #         required: true
+  #       - in: header
+  #         name: Kable-Client-Secret
+  #         description: Your `LIVE` or `TEST` secret key, depending on the environment in which the key is being created.
+  #         schema:
+  #           type: string
+  #         example: sk_test.jI92Cbu0.XeHWdYM1VTLy4oLtGMw8wrmpt5q9d04n
+  #         required: true
+  #     requestBody:
+  #       description: The customer and environment for which to create key
+  #       content:
+  #         application/json:
+  #           schema:
+  #             type: object
+  #             required:
+  #               - clientId
+  #               - environment
+  #             properties:
+  #               clientId:
+  #                 type: string
+  #                 example: "yourcompanyuser_1234567890"
+  #               environment:
+  #                 type: string
+  #                 example: "TEST"
+  #     responses:
+  #       "200":
+  #         description: "new key successfully created"
+  #         content:
+  #           application/json:
+  #             schema:
+  #               type: object
+  #               required:
+  #                 - clientId
+  #                 - environment
+  #                 - key
+  #               properties:
+  #                 clientId:
+  #                   type: string
+  #                   example: "yourcompanyuser_1234567890"
+  #                 environment:
+  #                   type: string
+  #                   example: "TEST"
+  #                 key:
+  #                   type: string
+  #                   example: "sk_test.M1VTLy4o.qAbs56udYLtGMw6war2gImpt5qjI92Ck"
+  #                 # created:
+  #                 #   type: string
+  #                 #   example: '2022-01-09T10:42:44.588Z'
+  #       "400":
+  #         description: "invalid input, object invalid"
+  #       "401":
+  #         description: "unauthorized"
 
-  /keys/revoke:
-    post:
-      tags:
-        - keys
-      summary: revoke a customer API key(s)
-      operationId: revokeKey
-      description: |
-        Revoke an API key (or keys) from a customer in a given environment
+  # /keys/revoke:
+  #   post:
+  #     tags:
+  #       - keys
+  #     summary: revoke a customer API key(s)
+  #     operationId: revokeKey
+  #     description: |
+  #       Revoke an API key (or keys) from a customer in a given environment
 
-        Note that this can also be done through the dashboard.
-      parameters:
-        - in: header
-          name: Kable-Client-Id
-          description: Your client ID, found in the dashboard of your Kable account.
-          schema:
-            type: string
-          example: kci_3c90e9ac92c64f31ae8ed84d21e18740
-          required: true
-        - in: header
-          name: Kable-Client-Secret
-          description: Your `LIVE` or `TEST` secret key, depending on the environment in which the key is being created.
-          schema:
-            type: string
-          example: sk_test.jI92Cbu0.XeHWdYM1VTLy4oLtGMw8wrmpt5q9d04n
-          required: true
+  #       Note that this can also be done through the dashboard.
+  #     parameters:
+  #       - in: header
+  #         name: Kable-Client-Id
+  #         description: Your client ID, found in the dashboard of your Kable account.
+  #         schema:
+  #           type: string
+  #         example: kci_3c90e9ac92c64f31ae8ed84d21e18740
+  #         required: true
+  #       - in: header
+  #         name: Kable-Client-Secret
+  #         description: Your `LIVE` or `TEST` secret key, depending on the environment in which the key is being created.
+  #         schema:
+  #           type: string
+  #         example: sk_test.jI92Cbu0.XeHWdYM1VTLy4oLtGMw8wrmpt5q9d04n
+  #         required: true
 
-      requestBody:
-        description: |
-          The customer and environment for which to revoke key(s).
+  #     requestBody:
+  #       description: |
+  #         The customer and environment for which to revoke key(s).
 
-          By default, all keys for a given customer and environment are revoked. To revoke an individual key, include the optional `key` parameter to revoke a single, specified key.
+  #         By default, all keys for a given customer and environment are revoked. To revoke an individual key, include the optional `key` parameter to revoke a single, specified key.
 
-          By default, revoked keys are useable for 10 minutes following revocation (to give developers time to update configurations). To revoke a key(s) immediately, use the optional `immediately` parameter.
-        content:
-          application/json:
-            schema:
-              type: object
-              required:
-                - clientId
-                - environment
-              properties:
-                clientId:
-                  type: string
-                  example: "yourcompanyuser_1234567890"
-                environment:
-                  type: string
-                  example: TEST
-                key:
-                  type: string
-                  example: "sk_test.M1VTLy4o.qAbs56udYLtGMw6war2gImpt5qjI92Ck"
-                immediately:
-                  type: boolean
-                  example: false
-      responses:
-        "200":
-          description: "key(s) successfully revoked"
-        "400":
-          description: "invalid input, object invalid"
-        "401":
-          description: "unauthorized"
+  #         By default, revoked keys are useable for 10 minutes following revocation (to give developers time to update configurations). To revoke a key(s) immediately, use the optional `immediately` parameter.
+  #       content:
+  #         application/json:
+  #           schema:
+  #             type: object
+  #             required:
+  #               - clientId
+  #               - environment
+  #             properties:
+  #               clientId:
+  #                 type: string
+  #                 example: "yourcompanyuser_1234567890"
+  #               environment:
+  #                 type: string
+  #                 example: TEST
+  #               key:
+  #                 type: string
+  #                 example: "sk_test.M1VTLy4o.qAbs56udYLtGMw6war2gImpt5qjI92Ck"
+  #               immediately:
+  #                 type: boolean
+  #                 example: false
+  #     responses:
+  #       "200":
+  #         description: "key(s) successfully revoked"
+  #       "400":
+  #         description: "invalid input, object invalid"
+  #       "401":
+  #         description: "unauthorized"
 
   /dimensions:
     get:
