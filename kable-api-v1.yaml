@@ -2,9 +2,9 @@ openapi: 3.0.0
 servers:
   # Added by API Auto Mocking Plugin
   - description: Kable Live
-    url: 'https://live.kable.io/api/v1'
+    url: "https://live.kable.io/api/v1"
   - description: Kable Test
-    url: 'https://test.kable.io/api/v1'
+    url: "https://test.kable.io/api/v1"
 
 info:
   description: |
@@ -48,9 +48,6 @@ info:
 
     The current version of Kable is **v1**.
 
-
-
-
   version: 1.2.1
   title: Kable API
   contact:
@@ -72,7 +69,6 @@ tags:
     description: The token API allows developers to create short-lived access tokens that grant temporary permissions to read usage data from Kable. This is useful if want to embed Kable dashboards within your developer portal to give your customers visibility into their usage of your product.
 
 paths:
-
   /customers:
     get:
       tags:
@@ -97,16 +93,16 @@ paths:
           example: sk_test.jI92Cbu0.XeHWdYM1VTLy4oLtGMw8wrmpt5q9d04n
           required: true
       responses:
-        '200':
-          description: 'information about your customers'
+        "200":
+          description: "information about your customers"
           content:
             application/json:
               schema:
                 type: array
                 items:
                   $ref: "#/components/schemas/Customer"
-        '401':
-          description: 'unauthorized'
+        "401":
+          description: "unauthorized"
 
   /customers/{customerId}:
     get:
@@ -139,16 +135,16 @@ paths:
           example: yourcompanyuser_1234567890
           required: true
       responses:
-        '200':
-          description: 'information about your customer'
+        "200":
+          description: "information about your customer"
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/Customer"
-        '401':
-          description: 'unauthorized'
-        '404':
-          description: 'not found'
+        "401":
+          description: "unauthorized"
+        "404":
+          description: "not found"
 
   /customers/create:
     post:
@@ -226,8 +222,8 @@ paths:
                     type: string
                   example: ["pln_a23e148584d0463482c961b7f62f824c"]
       responses:
-        '200':
-          description: 'new customer successfully created'
+        "200":
+          description: "new customer successfully created"
           content:
             application/json:
               schema:
@@ -239,19 +235,19 @@ paths:
                 properties:
                   kableClientId:
                     type: string
-                    example: 'kci_3c90e9ac92c64f31ae8ed84d21e18740'
+                    example: "kci_3c90e9ac92c64f31ae8ed84d21e18740"
                   customerId:
                     type: string
-                    example: 'cus_8276e1ac8ed84d21c64f31ae0082fe'
+                    example: "cus_8276e1ac8ed84d21c64f31ae0082fe"
                   clientId:
                     type: string
-                    example: 'yourcompanyuser_1234567890'
+                    example: "yourcompanyuser_1234567890"
                   companyName:
                     type: string
-                    example: 'Awesome Corp'
+                    example: "Awesome Corp"
                   currency:
                     type: string
-                    example: 'USD'
+                    example: "USD"
                   status:
                     type: string
                     enum:
@@ -261,10 +257,10 @@ paths:
                   nextInvoiceDate:
                     type: string
                     format: date-time
-                    example: '2022-02-09T00:00:00.000Z'
+                    example: "2022-02-09T00:00:00.000Z"
                   stripeCustomerId:
                     type: string
-                    example: 'cus_a91565WBFwU30c'
+                    example: "cus_a91565WBFwU30c"
                   # created:
                   #   type: string
                   #   example: '2022-01-09T10:42:44.588Z'
@@ -279,10 +275,10 @@ paths:
                     type: array
                     items:
                       $ref: "#/components/schemas/Key"
-        '400':
-          description: 'invalid input, object invalid'
-        '401':
-          description: 'unauthorized'
+        "400":
+          description: "invalid input, object invalid"
+        "401":
+          description: "unauthorized"
 
   /customers/{customerId}/update:
     post:
@@ -330,16 +326,16 @@ paths:
                   type: string
                   example: cus_a91565WBFwU30c
       responses:
-        '200':
-          description: 'customer successfully updated'
+        "200":
+          description: "customer successfully updated"
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/Customer"
-        '400':
-          description: 'invalid input, object invalid'
-        '401':
-          description: 'unauthorized'
+        "400":
+          description: "invalid input, object invalid"
+        "401":
+          description: "unauthorized"
 
   /customers/{customerId}/cancel:
     post:
@@ -372,16 +368,16 @@ paths:
           example: cus_8276e1ac8ed84d21c64f31ae0082fe
           required: true
       responses:
-        '200':
-          description: 'customer successfully cancelled'
+        "200":
+          description: "customer successfully cancelled"
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/Customer"
-        '400':
-          description: 'invalid input, object invalid'
-        '401':
-          description: 'unauthorized'
+        "400":
+          description: "invalid input, object invalid"
+        "401":
+          description: "unauthorized"
 
   /customers/{customerId}/plans/add:
     post:
@@ -429,18 +425,22 @@ paths:
                   type: array
                   items:
                     type: string
-                  example: ["pln_a23e148584d0463482c961b7f62f824c", "pln_b177473b31d44c3b8a2a365618a3deca"]
+                  example:
+                    [
+                      "pln_a23e148584d0463482c961b7f62f824c",
+                      "pln_b177473b31d44c3b8a2a365618a3deca",
+                    ]
       responses:
-        '200':
-          description: 'customer plan successfully added'
+        "200":
+          description: "customer plan successfully added"
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/Customer"
-        '400':
-          description: 'invalid input, object invalid'
-        '401':
-          description: 'unauthorized'
+        "400":
+          description: "invalid input, object invalid"
+        "401":
+          description: "unauthorized"
 
   /customers/{customerId}/plans/remove:
     post:
@@ -488,18 +488,22 @@ paths:
                   type: array
                   items:
                     type: string
-                  example: ["pln_a23e148584d0463482c961b7f62f824c", "pln_b177473b31d44c3b8a2a365618a3deca"]
+                  example:
+                    [
+                      "pln_a23e148584d0463482c961b7f62f824c",
+                      "pln_b177473b31d44c3b8a2a365618a3deca",
+                    ]
       responses:
-        '200':
-          description: 'customer plan successfully removed'
+        "200":
+          description: "customer plan successfully removed"
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/Customer"
-        '400':
-          description: 'invalid input, object invalid'
-        '401':
-          description: 'unauthorized'
+        "400":
+          description: "invalid input, object invalid"
+        "401":
+          description: "unauthorized"
 
   /customers/{customerId}/payment_methods/add:
     post:
@@ -550,8 +554,8 @@ paths:
                   type: string
                   example: https://yourcompany.com/signup/failure?success=false
       responses:
-        '200':
-          description: 'Stripe Checkout Session successfully created to collect customer payment method'
+        "200":
+          description: "Stripe Checkout Session successfully created to collect customer payment method"
           content:
             application/json:
               schema:
@@ -561,12 +565,11 @@ paths:
                 properties:
                   url:
                     type: string
-                    example: 'https://checkout.stripe.com/pay/cs_test_c1PJzZEmw9vH1x978D...'
-        '400':
-          description: 'invalid input, customer or company Stripe configuration are invalid'
-        '401':
-          description: 'unauthorized'
-
+                    example: "https://checkout.stripe.com/pay/cs_test_c1PJzZEmw9vH1x978D..."
+        "400":
+          description: "invalid input, customer or company Stripe configuration are invalid"
+        "401":
+          description: "unauthorized"
 
   /keys/create:
     post:
@@ -607,13 +610,13 @@ paths:
               properties:
                 clientId:
                   type: string
-                  example: 'yourcompanyuser_1234567890'
+                  example: "yourcompanyuser_1234567890"
                 environment:
                   type: string
                   example: "TEST"
       responses:
-        '200':
-          description: 'new key successfully created'
+        "200":
+          description: "new key successfully created"
           content:
             application/json:
               schema:
@@ -625,7 +628,7 @@ paths:
                 properties:
                   clientId:
                     type: string
-                    example: 'yourcompanyuser_1234567890'
+                    example: "yourcompanyuser_1234567890"
                   environment:
                     type: string
                     example: "TEST"
@@ -635,10 +638,10 @@ paths:
                   # created:
                   #   type: string
                   #   example: '2022-01-09T10:42:44.588Z'
-        '400':
-          description: 'invalid input, object invalid'
-        '401':
-          description: 'unauthorized'
+        "400":
+          description: "invalid input, object invalid"
+        "401":
+          description: "unauthorized"
 
   /keys/revoke:
     post:
@@ -683,23 +686,23 @@ paths:
               properties:
                 clientId:
                   type: string
-                  example: 'yourcompanyuser_1234567890'
+                  example: "yourcompanyuser_1234567890"
                 environment:
                   type: string
                   example: TEST
                 key:
                   type: string
-                  example: 'sk_test.M1VTLy4o.qAbs56udYLtGMw6war2gImpt5qjI92Ck'
+                  example: "sk_test.M1VTLy4o.qAbs56udYLtGMw6war2gImpt5qjI92Ck"
                 immediately:
                   type: boolean
                   example: false
       responses:
-        '200':
-          description: 'key(s) successfully revoked'
-        '400':
-          description: 'invalid input, object invalid'
-        '401':
-          description: 'unauthorized'
+        "200":
+          description: "key(s) successfully revoked"
+        "400":
+          description: "invalid input, object invalid"
+        "401":
+          description: "unauthorized"
 
   /dimensions:
     get:
@@ -725,16 +728,16 @@ paths:
           example: sk_test.jI92Cbu0.XeHWdYM1VTLy4oLtGMw8wrmpt5q9d04n
           required: true
       responses:
-        '200':
-          description: 'information about your dimensions'
+        "200":
+          description: "information about your dimensions"
           content:
             application/json:
               schema:
                 type: array
                 items:
                   $ref: "#/components/schemas/Dimension"
-        '401':
-          description: 'unauthorized'
+        "401":
+          description: "unauthorized"
 
   /dimensions/{dimensionId}:
     get:
@@ -767,17 +770,16 @@ paths:
           example: userId
           required: true
       responses:
-        '200':
-          description: 'information about your dimension'
+        "200":
+          description: "information about your dimension"
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/Dimension"
-        '401':
-          description: 'unauthorized'
-        '404':
-          description: 'not found'
-
+        "401":
+          description: "unauthorized"
+        "404":
+          description: "not found"
 
   /plans:
     get:
@@ -803,16 +805,16 @@ paths:
           example: sk_test.jI92Cbu0.XeHWdYM1VTLy4oLtGMw8wrmpt5q9d04n
           required: true
       responses:
-        '200':
-          description: 'information about your plans'
+        "200":
+          description: "information about your plans"
           content:
             application/json:
               schema:
                 type: array
                 items:
                   $ref: "#/components/schemas/Plan"
-        '401':
-          description: 'unauthorized'
+        "401":
+          description: "unauthorized"
 
   /plans/{planId}:
     get:
@@ -845,17 +847,16 @@ paths:
           example: userId
           required: true
       responses:
-        '200':
-          description: 'information about your plan'
+        "200":
+          description: "information about your plan"
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/Plan"
-        '401':
-          description: 'unauthorized'
-        '404':
-          description: 'not found'
-
+        "401":
+          description: "unauthorized"
+        "404":
+          description: "not found"
 
   /events/create:
     post:
@@ -889,14 +890,14 @@ paths:
             schema:
               type: array
               items:
-                $ref: '#/components/schemas/Event'
+                $ref: "#/components/schemas/Event"
       responses:
-        '200':
-          description: 'events successfully recorded'
-        '400':
-          description: 'invalid input, object invalid'
-        '401':
-          description: 'unauthorized'
+        "200":
+          description: "events successfully recorded"
+        "400":
+          description: "invalid input, object invalid"
+        "401":
+          description: "unauthorized"
 
   # # DEPRECATED #
   # /metrics/get:
@@ -1042,19 +1043,19 @@ paths:
                   description: Valid values are `HOUR`, `DAY`, and `MONTH`.
                 clientId:
                   type: string
-                  example: 'yourcompanyuser_1234567890'
+                  example: "yourcompanyuser_1234567890"
                   description: When provided, query will consider only this customer. When `null`, query will consider all of your customers.
       responses:
-        '200':
+        "200":
           description: usage metrics
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/UsageMetricResponse"
-        '400':
-          description: 'invalid input, object invalid'
-        '401':
-          description: 'unauthorized'
+        "400":
+          description: "invalid input, object invalid"
+        "401":
+          description: "unauthorized"
 
   /tokens/create:
     post:
@@ -1090,10 +1091,10 @@ paths:
               properties:
                 clientId:
                   type: string
-                  example: 'yourcompanyuser_1234567890'
+                  example: "yourcompanyuser_1234567890"
       responses:
-        '200':
-          description: 'new key successfully created'
+        "200":
+          description: "new key successfully created"
           content:
             application/json:
               schema:
@@ -1103,17 +1104,15 @@ paths:
                 properties:
                   token:
                     type: string
-                    example: '30e8c05f9add4ebeaab3ab2f42bdde31'
-        '400':
-          description: 'invalid input, object invalid'
-        '401':
-          description: 'unauthorized'
-
+                    example: "30e8c05f9add4ebeaab3ab2f42bdde31"
+        "400":
+          description: "invalid input, object invalid"
+        "401":
+          description: "unauthorized"
 
 externalDocs:
   description: Find out more about the Kable API
-  url: 'https://kable.stoplight.io/docs/kable'
-
+  url: "https://kable.stoplight.io/docs/kable"
 
 components:
   schemas:
@@ -1132,7 +1131,13 @@ components:
           description: "When the event occurred. Timestamps must be formatted as RFC 3339 strings like `2022-01-09T09:32:01Z`."
         data:
           type: object
-          example: { "userId": "xyz123", "transactionId": "tx00000abcde", "countOfSomethingInteresting": 10, "totalCost": 399.99 }
+          example:
+            {
+              "userId": "xyz123",
+              "transactionId": "tx00000abcde",
+              "countOfSomethingInteresting": 10,
+              "totalCost": 399.99,
+            }
           description: |
             `data` is a JSON-formatted object containing key-value pairs of information to be tracked by Kable. The keys provided in the `data` JSON correspond to the Dimensions you've defined on Kable.
 
@@ -1146,15 +1151,15 @@ components:
       properties:
         dimensionId:
           type: string
-          example: 'dim_c5f32b8cd8934356b5167a3b2c6c6314'
+          example: "dim_c5f32b8cd8934356b5167a3b2c6c6314"
           description: "A Kable-defined identifier for the dimension."
         key:
           type: string
-          example: 'userId'
+          example: "userId"
           description: "An identifier for the dimension defined by you. This key corresponds to the key in the JSON payload of a usage event, and can be passed into the `record` library method."
         name:
           type: string
-          example: 'User'
+          example: "User"
           description: "A human-readable name for the dimension, visible on dashboards, invoices, and reports."
     Plan:
       type: object
@@ -1165,27 +1170,27 @@ components:
       properties:
         planId:
           type: string
-          example: 'pln_a23e148584d0463482c961b7f62f824c'
+          example: "pln_a23e148584d0463482c961b7f62f824c"
           description: "A Kable-defined identifier for the plan."
         dimensionId:
           type: string
-          example: 'dim_c5f32b8cd8934356b5167a3b2c6c6314'
+          example: "dim_c5f32b8cd8934356b5167a3b2c6c6314"
           description: "An identifier of the dimension along which usage is aggregated in this plan."
         name:
           type: string
-          example: 'Requests Usage Plan'
+          example: "Requests Usage Plan"
           description: "A human-readable name for the plan, visible on dashboards, invoices, and reports."
         description:
           type: string
-          example: 'A usage plan based on the number of API requests'
+          example: "A usage plan based on the number of API requests"
           description: "A human-readable description for the plan, visible on dashboards, invoices, and reports."
         nickname:
           type: string
-          example: 'requests_usage_v1'
+          example: "requests_usage_v1"
           description: An additional identifier for the plan, defined by you, that is *not* visible to customers. If you have different *Monthly Active Users Plan*s for different cohorts of customers, this is a useful place to differentiate those.
         nextPlanId:
           type: string
-          example: 'pln_c1a443dedf8d459c975ed29b2c0d745e'
+          example: "pln_c1a443dedf8d459c975ed29b2c0d745e"
           description: An optional identifier of any "next" plan after the termination of a free trials or pilot programs.
     Customer:
       type: object
@@ -1198,23 +1203,23 @@ components:
       properties:
         kableClientId:
           type: string
-          example: 'kci_3c90e9ac92c64f31ae8ed84d21e18740'
+          example: "kci_3c90e9ac92c64f31ae8ed84d21e18740"
           description: "Your company's Kable client ID."
         customerId:
           type: string
-          example: 'cus_8276e1ac8ed84d21c64f31ae0082fe'
+          example: "cus_8276e1ac8ed84d21c64f31ae0082fe"
           description: "A Kable-defined identifier for the customer."
         clientId:
           type: string
-          example: 'yourcompanyuser_1234567890'
+          example: "yourcompanyuser_1234567890"
           description: "A unique identifier for the customer, defined by you. This usually corresponds to your own internal unique identifier for customers, and is the identifier by which Kable attributes customer usage."
         companyName:
           type: string
-          example: 'Awesome Corp'
+          example: "Awesome Corp"
           description: "The name of the customer, visible on dashboards, invoices, and reports."
         currency:
           type: string
-          example: 'USD'
+          example: "USD"
           description: "The currency with which this customer pays for plans."
         status:
           type: string
@@ -1225,11 +1230,11 @@ components:
           description: "The current status of the customer."
         nextInvoiceDate:
           type: string
-          example: '2022-02-09T00:00:00.000Z'
+          example: "2022-02-09T00:00:00.000Z"
           description: "The date of the customer's next invoice, if any."
         stripeCustomerId:
           type: string
-          example: 'cus_a91565WBFwU30c'
+          example: "cus_a91565WBFwU30c"
           description: "The customer's Stripe `customer_id`, if any, for automatic invoice processing through Stripe."
         plans:
           type: array
@@ -1246,43 +1251,43 @@ components:
       properties:
         planId:
           type: string
-          example: 'pln_a23e148584d0463482c961b7f62f824c'
+          example: "pln_a23e148584d0463482c961b7f62f824c"
           description: "A Kable-defined identifier for the plan."
         dimensionId:
           type: string
-          example: 'dim_c5f32b8cd8934356b5167a3b2c6c6314'
+          example: "dim_c5f32b8cd8934356b5167a3b2c6c6314"
           description: "An identifier of the dimension along which usage is aggregated in this plan."
         name:
           type: string
-          example: 'Requests Usage Plan'
+          example: "Requests Usage Plan"
           description: "A human-readable name for the plan, visible on dashboards, invoices, and reports."
         description:
           type: string
-          example: 'A usage plan based on the number of API requests'
+          example: "A usage plan based on the number of API requests"
           description: "A human-readable description for the plan, visible on dashboards, invoices, and reports."
         nickname:
           type: string
-          example: 'requests_usage_v1'
+          example: "requests_usage_v1"
           description: An additional identifier for the plan, defined by you, that is *not* visible to customers. If you have different *Monthly Active Users Plan*s for different cohorts of customers, this is a useful place to differentiate those.
         addedDate:
           type: string
           description: Date the plan was added to the customer.
-          example: '2022-01-09T00:00:00.000Z'
+          example: "2022-01-09T00:00:00.000Z"
         endedDate:
           type: string
           description: Date the plan ended or will end for trials or pilot programs.
-          example: '2022-02-09T00:00:00.000Z'
+          example: "2022-02-09T00:00:00.000Z"
         periodStartDate:
           type: string
           description: Date the current invoice cycle begins.
-          example: '2022-01-09T00:00:00.000Z'
+          example: "2022-01-09T00:00:00.000Z"
         periodEndDate:
           type: string
           description: Date the current invoice cycle ends.
-          example: '2022-02-09T00:00:00.000Z'
+          example: "2022-02-09T00:00:00.000Z"
         nextPlanId:
           type: string
-          example: 'pln_c1a443dedf8d459c975ed29b2c0d745e'
+          example: "pln_c1a443dedf8d459c975ed29b2c0d745e"
           description: An optional identifier of any "next" plan after the termination of a free trials or pilot programs.
     Key:
       type: object
@@ -1335,7 +1340,7 @@ components:
 
         clientId:
           type: string
-          example: 'yourcompanyuser_1234567890'
+          example: "yourcompanyuser_1234567890"
           description: When provided, query will consider only this customer. When `null`, query will consider all of your customers.
         intervals:
           type: array
@@ -1363,7 +1368,7 @@ components:
           $ref: "#/components/schemas/Dimension"
         clientId:
           type: string
-          example: 'yourcompanyuser_1234567890'
+          example: "yourcompanyuser_1234567890"
           description: When provided, query will consider only this customer. When `null`, query will consider all of your customers.
         total:
           type: number
