@@ -830,6 +830,58 @@ paths:
         "404":
           description: "not found"
 
+  /dimensions/create:
+    post:
+      tags:
+        - dimensions
+      summary: create a dimension
+      operationId: createDimension
+      description: |
+        Create a dimension. Call this to programmatically define a new business metric to use in dashboards and plans.
+
+        Note that dimensions can also be updated manually from within the Dimensions tab of your Kable dashboard.
+      parameters:
+        - in: header
+          name: Kable-Client-Id
+          description: Your client ID, found in the dashboard of your Kable account.
+          schema:
+            type: string
+          example: kci_3c90e9ac92c64f31ae8ed84d21e18740
+          required: true
+        - in: header
+          name: Kable-Client-Secret
+          description: Your `LIVE` or `TEST` secret key. Customers exist across all environments, so it does not matter which environment you use to create customers. Each customer will have separate keys for `LIVE` and `TEST` environments of your API.
+          schema:
+            type: string
+          example: sk_test.jI92Cbu0.XeHWdYM1VTLy4oLtGMw8wrmpt5q9d04n
+          required: true
+      requestBody:
+        description: Information about the dimension to create.
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                key:
+                  type: string
+                  description: The key by which Kable identifies the dimension in your usage events.
+                  example: userId
+                name:
+                  type: string
+                  description: A human-readable name for the dimension which will be visible in dashboards and on invoices. Dimension names should be singular, not plural (ie "User," not "Users").
+                  example: User
+      responses:
+        "200":
+          description: "dimension successfully created"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Dimension"
+        "400":
+          description: "invalid input, object invalid"
+        "401":
+          description: "unauthorized"
+
   /plans:
     get:
       tags:
