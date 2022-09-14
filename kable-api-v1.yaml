@@ -1121,6 +1121,10 @@ paths:
                 price:
                   $ref: "#/components/schemas/Price"
                   description: "The monthly price of the plan."
+                metadata:
+                  type: object
+                  example: { "foo": "bar" }
+                  description: "Arbitrary key-value pairs to attach to the object that can be useful for controlling functionality inside your API."
       responses:
         "200":
           description: "plan successfully created"
@@ -1206,6 +1210,10 @@ paths:
                 price:
                   $ref: "#/components/schemas/Price"
                   description: "The monthly price of the plan."
+                metadata:
+                  type: object
+                  example: { "foo": "bar" }
+                  description: "Arbitrary key-value pairs to attach to the object that can be useful for controlling functionality inside your API."
       responses:
         "200":
           description: "plan successfully updated"
@@ -1666,6 +1674,10 @@ components:
         price:
           $ref: "#/components/schemas/Price"
           description: "The monthly price of the plan."
+        metadata:
+          type: object
+          example: { "foo": "bar" }
+          description: "Arbitrary key-value pairs to attach to the object that can be useful for controlling functionality inside your API."
         # nextPlanId:
         #   type: string
         #   example: "pln_c1a443dedf8d459c975ed29b2c0d745e"
