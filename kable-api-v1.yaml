@@ -469,9 +469,11 @@ paths:
               properties:
                 planId:
                   type: string
+                  description: The identifier for a single plan.
                   example: pln_a23e148584d0463482c961b7f62f824c
                 planIds:
                   type: array
+                  description: The identifiers for many plans.
                   items:
                     type: string
                   example:
@@ -532,9 +534,11 @@ paths:
               properties:
                 planId:
                   type: string
+                  description: The identifier for a single plan.
                   example: pln_a23e148584d0463482c961b7f62f824c
                 planIds:
                   type: array
+                  description: The identifiers for many plans.
                   items:
                     type: string
                   example:
@@ -1033,10 +1037,10 @@ paths:
           required: true
         - in: path
           name: planId
-          description: The identifier for the plan.
+          description: The identifier for the plan. You can pass in *either* the `planId` (as defined by Kable) or the `externalId` (as defined by you).
           schema:
             type: string
-          example: userId
+          example: pln_a23e148584d0463482c961b7f62f824c
           required: true
       responses:
         "200":
@@ -1089,6 +1093,10 @@ paths:
                   type: string
                   example: "Requests Usage Plan"
                   description: "A human-readable name for the plan, visible on dashboards, invoices, and reports."
+                externalId:
+                  type: string
+                  example: "yourcompany_plan123"
+                  description: "An identifier for the plan as defined by your API."
                 description:
                   type: string
                   example: "A usage plan based on the number of API requests"
@@ -1162,7 +1170,7 @@ paths:
           required: true
         - in: path
           name: planId
-          description: The identifier for the plan.
+          description: The identifier for the plan. You can pass in *either* the `planId` (as defined by Kable) or the `externalId` (as defined by you).
           schema:
             type: string
           example: pln_a23e148584d0463482c961b7f62f824c
@@ -1178,6 +1186,10 @@ paths:
                   type: string
                   example: "Requests Usage Plan"
                   description: "A human-readable name for the plan, visible on dashboards, invoices, and reports."
+                externalId:
+                  type: string
+                  example: "yourcompany_plan123"
+                  description: "An identifier for the plan as defined by your API."
                 description:
                   type: string
                   example: "A usage plan based on the number of API requests"
@@ -1253,7 +1265,7 @@ paths:
           required: true
         - in: path
           name: planId
-          description: The identifier for the plan.
+          description: The identifier for the plan. You can pass in *either* the `planId` (as defined by Kable) or the `externalId` (as defined by you).
           schema:
             type: string
           example: pln_a23e148584d0463482c961b7f62f824c
@@ -1642,6 +1654,10 @@ components:
           type: string
           example: "Requests Usage Plan"
           description: "A human-readable name for the plan, visible on dashboards, invoices, and reports."
+        externalId:
+          type: string
+          example: "yourcompany_plan123"
+          description: "An identifier for the plan as defined by your API."
         description:
           type: string
           example: "A usage plan based on the number of API requests"
@@ -1761,6 +1777,10 @@ components:
           type: string
           example: "Requests Usage Plan"
           description: "A human-readable name for the plan, visible on dashboards, invoices, and reports."
+        externalId:
+          type: string
+          example: "yourcompany_plan123"
+          description: "An identifier for the plan as defined by your API."
         description:
           type: string
           example: "A usage plan based on the number of API requests"
