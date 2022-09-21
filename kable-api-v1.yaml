@@ -214,8 +214,18 @@ paths:
                   example: Awesome Corp
                 currency:
                   type: string
-                  description: "The currency with which this customer pays for plans."
-                  example: USD
+                  enum:
+                    - "USD"
+                    - "CAD"
+                    - "MXN"
+                    - "EUR"
+                    - "GBP"
+                    - "JPY"
+                    - "INR"
+                    - "CNY"
+                    - "AUD"
+                    - "NZD"
+                  example: "USD"
                 stripeCustomerId:
                   type: string
                   description: "The customer's Stripe `customer_id`, if any, for automatic invoice processing through Stripe."
@@ -252,7 +262,19 @@ paths:
                     example: "Awesome Corp"
                   currency:
                     type: string
+                    enum:
+                      - "USD"
+                      - "CAD"
+                      - "MXN"
+                      - "EUR"
+                      - "GBP"
+                      - "JPY"
+                      - "INR"
+                      - "CNY"
+                      - "AUD"
+                      - "NZD"
                     example: "USD"
+                    description: "Three-letter currency code."
                   status:
                     type: string
                     enum:
@@ -621,6 +643,122 @@ paths:
                     example: "https://checkout.stripe.com/pay/cs_test_c1PJzZEmw9vH1x978D..."
         "400":
           description: "invalid input, customer or company Stripe configuration are invalid"
+        "401":
+          description: "unauthorized"
+
+  /customers/{customerId}/credits/balance:
+    get:
+      tags:
+        - credit grants
+      summary: get a customer's credit balance
+      operationId: getCustomerCreditBalance
+      description: |
+        Get a customer's available credit balance.
+      parameters:
+        - in: header
+          name: Kable-Client-Id
+          description: Your client ID, found in the dashboard of your Kable account.
+          schema:
+            type: string
+          example: kci_3c90e9ac92c64f31ae8ed84d21e18740
+          required: true
+        - in: header
+          name: Kable-Client-Secret
+          description: Your `LIVE` or `TEST` secret key. Customers exist across all environments, so it does not matter which environment you use to create customers. Each customer will have separate keys for `LIVE` and `TEST` environments of your API.
+          schema:
+            type: string
+          example: sk_test.jI92Cbu0.XeHWdYM1VTLy4oLtGMw8wrmpt5q9d04n
+          required: true
+        - in: path
+          name: customerId
+          description: The identifier for the customer. You can pass in *either* the `customerId` (as defined by Kable) or the `clientId` (as defined by you).
+          schema:
+            type: string
+          example: cus_8276e1ac8ed84d21c64f31ae0082fe
+          required: true
+      responses:
+        "200":
+          description: "customer credit grant balance"
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - available
+                properties:
+                  available:
+                    type: number
+                    description: The customer's available credit grant balance
+                    example: 75
+
+        "400":
+          description: "invalid input"
+        "401":
+          description: "unauthorized"
+
+  /customers/{customerId}/credits/create:
+    post:
+      tags:
+        - credit grants
+      summary: create a new credit grant for a customer
+      operationId: createCreditGrant
+      description: |
+        Add a credit grant to a customer.
+      parameters:
+        - in: header
+          name: Kable-Client-Id
+          description: Your client ID, found in the dashboard of your Kable account.
+          schema:
+            type: string
+          example: kci_3c90e9ac92c64f31ae8ed84d21e18740
+          required: true
+        - in: header
+          name: Kable-Client-Secret
+          description: Your `LIVE` or `TEST` secret key. Customers exist across all environments, so it does not matter which environment you use to create customers. Each customer will have separate keys for `LIVE` and `TEST` environments of your API.
+          schema:
+            type: string
+          example: sk_test.jI92Cbu0.XeHWdYM1VTLy4oLtGMw8wrmpt5q9d04n
+          required: true
+        - in: path
+          name: customerId
+          description: The identifier for the customer. You can pass in *either* the `customerId` (as defined by Kable) or the `clientId` (as defined by you).
+          schema:
+            type: string
+          example: cus_8276e1ac8ed84d21c64f31ae0082fe
+          required: true
+      requestBody:
+        description: Information about the credit grant to create.
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - grantAmount
+              properties:
+                grantAmount:
+                  type: number
+                  example: 100
+                  description: "The number of credits to create in the grant."
+                description:
+                  type: string
+                  example: "A top-up grant to buy more API credits."
+                  description: "A human-readable description that explains why the credit grant is being created."
+                chargeAmount:
+                  type: number
+                  example: 199.99
+                  description: |
+                    An optional amount to charge the customer (in the customer's configured `currency`) before issuing a credit grant.
+
+                    When the `chargeAmount` field is supplied, Kable will attempt to charge the customer immediately through Stripe before issuing the grant. Therefore, when specifying a `chargeAmount`, the customer must have a Stripe integration defined and have a default payment card on-file.
+      responses:
+        "200":
+          description: "credit grant successfully created"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CreditGrant"
+        "400":
+          description: "invalid input"
         "401":
           description: "unauthorized"
 
@@ -1553,12 +1691,15 @@ components:
           type: string
           format: date-time
           description: "When the event occurred. Timestamps must be formatted as RFC 3339 strings like `2022-01-09T09:32:01Z`."
+        transactionId:
+          type: string
+          description: A unique identifier for the event, used as an idempotency key for event deduplication.
         data:
           type: object
           example:
             {
               "userId": "xyz123",
-              "transactionId": "tx00000abcde",
+              "messageId": "msg_824ae20a",
               "countOfSomethingInteresting": 10,
               "totalCost": 399.99,
             }
@@ -1594,8 +1735,19 @@ components:
           description: "The name of the customer, visible on dashboards, invoices, and reports."
         currency:
           type: string
+          enum:
+            - "USD"
+            - "CAD"
+            - "MXN"
+            - "EUR"
+            - "GBP"
+            - "JPY"
+            - "INR"
+            - "CNY"
+            - "AUD"
+            - "NZD"
           example: "USD"
-          description: "The currency with which this customer pays for plans."
+          description: "The three-letter currency code with which this customer pays for plans."
         status:
           type: string
           enum:
@@ -1835,6 +1987,46 @@ components:
           type: string
           example: "sk_test.jI92Cbu0.XeHWdYM1VTLy4oLtGMw8wrmpt5q9d04n"
           description: "The secret value of the key."
+
+    CreditGrant:
+      type: object
+      required:
+        - creditGrantId
+        - grantAmount
+        - balanceAmount
+        - currency
+      properties:
+        creditGrantId:
+          type: string
+          example: "crd_f55ad8df7b4b4890881595d3d8005c4f"
+          description: "The identifier of the credit grant created on Kable."
+        grantAmount:
+          type: number
+          example: 100
+          description: "The number of credits created in the grant."
+        balanceAmount:
+          type: number
+          example: 100
+          description: "The available, non-consumed balance remaining in the grant."
+        paidAmount:
+          type: number
+          example: 100
+          description: "The amount paid (in the specified `currency`), if any, for the credit grant."
+        currency:
+          type: string
+          enum:
+            - "USD"
+            - "CAD"
+            - "MXN"
+            - "EUR"
+            - "GBP"
+            - "JPY"
+            - "INR"
+            - "CNY"
+            - "AUD"
+            - "NZD"
+          example: "USD"
+          description: "Three-letter currency code."
 
     UsageMetricResponse:
       type: object
