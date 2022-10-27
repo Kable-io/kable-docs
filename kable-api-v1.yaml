@@ -48,7 +48,7 @@ info:
 
     The current version of Kable is **v1**.
 
-  version: 1.2.1
+  version: 1.2.2
   title: Kable API
   contact:
     email: contact@kable.io
@@ -1669,6 +1669,41 @@ paths:
                     example: "30e8c05f9add4ebeaab3ab2f42bdde31"
         "400":
           description: "invalid input, object invalid"
+        "401":
+          description: "unauthorized"
+  /authenticate:
+    post:
+      tags:
+        - authenticate
+      summary: authenticate using Kable API credentials
+      operationId: authenticate
+      description: |
+        Validate and authenticate a client ID and client secret pair. This endpoint can be used to authenticate a given customers credentials by providing the `X-Client-Id` header and their secret via the `X-Api-Key` header or can be used to authenticate your credentials by providing your secret as the `X-Api-Key` header and omitting the `X-Client-Id` header.
+      parameters:
+        - in: header
+          name: Kable-Client-Id
+          description: Your client ID, found in the dashboard of your Kable account.
+          schema:
+            type: string
+          example: kci_3c90e9ac92c64f31ae8ed84d21e18740
+          required: true
+        - in: header
+          name: X-API-Key
+          description: A `LIVE` or `TEST` secret key, corresponding to the client ID if provided, or the Kable Client ID if a client ID is not provided.
+          schema:
+            type: string
+          example: sk_test.jI92Cbu0.XeHWdYM1VTLy4oLtGMw8wrmpt5q9d04n
+          required: true
+        - in: header
+          name: X-Client-Id
+          description: Your customer's client ID, found in the dashboard of your Kable account. This is the client ID that you provided on creation for a given customer.
+          schema:
+            type: string
+          example: awesome-corp
+          required: false
+      responses:
+        "200":
+          description: "Client and secret successfully verified and authenticated."
         "401":
           description: "unauthorized"
 
