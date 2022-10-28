@@ -48,7 +48,7 @@ info:
 
     The current version of Kable is **v1**.
 
-  version: 1.2.2
+  version: 1.2.1
   title: Kable API
   contact:
     email: contact@kable.io
@@ -1675,10 +1675,12 @@ paths:
     post:
       tags:
         - authenticate
-      summary: authenticate using Kable API credentials
+      summary: authenticate an API request
       operationId: authenticate
       description: |
-        Validate and authenticate a client ID and client secret pair. This endpoint can be used to authenticate a given customers credentials by providing the `X-Client-Id` header and their secret via the `X-Api-Key` header or can be used to authenticate your credentials by providing your secret as the `X-Api-Key` header and omitting the `X-Client-Id` header.
+        Authenticate a customer API request.
+
+        Learn more about Kable as an Authentication Provider in the documentation.
       parameters:
         - in: header
           name: Kable-Client-Id
@@ -1688,22 +1690,22 @@ paths:
           example: kci_3c90e9ac92c64f31ae8ed84d21e18740
           required: true
         - in: header
-          name: X-API-Key
-          description: A `LIVE` or `TEST` secret key, corresponding to the client ID if provided, or the Kable Client ID if a client ID is not provided.
+          name: X-Api-Key
+          description: An API key to authenticate for the provided X-Client-Id.
           schema:
             type: string
-          example: sk_test.jI92Cbu0.XeHWdYM1VTLy4oLtGMw8wrmpt5q9d04n
+          example: sk_test.Tkcyh5Nd.pXVoFFkA8zJm02CA82ODyKRK1E7ZPeAv
           required: true
         - in: header
           name: X-Client-Id
-          description: Your customer's client ID, found in the dashboard of your Kable account. This is the client ID that you provided on creation for a given customer.
+          description: The client ID of the customer to authenticate.
           schema:
             type: string
-          example: awesome-corp
+          example: yourcompanyuser_1234567890
           required: false
       responses:
         "200":
-          description: "Client and secret successfully verified and authenticated."
+          description: "Authentication successful"
         "401":
           description: "unauthorized"
 
