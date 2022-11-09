@@ -234,8 +234,15 @@ paths:
                   type: array
                   items:
                     type: string
-                  description: "A collection of plans to which this customer is currently subscribed."
+                  description: "A collection of plans to which this customer will be subscribed."
                   example: ["pln_a23e148584d0463482c961b7f62f824c"]
+                bundleIds:
+                  type: array
+                  items:
+                    type: string
+                  description: "A collection of bundles to which this customer will be subscribed."
+                  example: ["bun_a23e148584d0463482c961b7f62f824c"]
+
       responses:
         "200":
           description: "new customer successfully created"
@@ -571,6 +578,116 @@ paths:
       responses:
         "200":
           description: "customer plan successfully removed"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Customer"
+        "400":
+          description: "invalid input, object invalid"
+        "401":
+          description: "unauthorized"
+
+  /customers/{customerId}/bundles/add:
+    post:
+      tags:
+        - customers
+      summary: add a bundle to a customer
+      operationId: addCustomerBundle
+      description: |
+        Add a bundle to a customer.
+
+        Note that customer bundles can also be added and removed manually from within the Customers tab of your Kable dashboard.
+      parameters:
+        - in: header
+          name: Kable-Client-Id
+          description: Your client ID, found in the dashboard of your Kable account.
+          schema:
+            type: string
+          example: kci_3c90e9ac92c64f31ae8ed84d21e18740
+          required: true
+        - in: header
+          name: Kable-Client-Secret
+          description: Your `LIVE` or `TEST` secret key.
+          schema:
+            type: string
+          example: sk_test.jI92Cbu0.XeHWdYM1VTLy4oLtGMw8wrmpt5q9d04n
+          required: true
+        - in: path
+          name: customerId
+          description: The identifier for the customer. You can pass in *either* the `customerId` (as defined by Kable) or the `clientId` (as defined by you).
+          schema:
+            type: string
+          example: cus_8276e1ac8ed84d21c64f31ae0082fe
+          required: true
+      requestBody:
+        description: Bundle ID to add.
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                bundleId:
+                  type: string
+                  description: The identifier for the bundle.
+                  example: bun_a23e148584d0463482c961b7f62f824c
+      responses:
+        "200":
+          description: "customer bundle successfully added"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Customer"
+        "400":
+          description: "invalid input, object invalid"
+        "401":
+          description: "unauthorized"
+
+  /customers/{customerId}/bundles/remove:
+    post:
+      tags:
+        - customers
+      summary: remove a bundle from a customer
+      operationId: removeCustomerBundle
+      description: |
+        Remove a bundle from a customer.
+
+        Note that customer bundles can also be added and removed manually from within the Customers tab of your Kable dashboard.
+      parameters:
+        - in: header
+          name: Kable-Client-Id
+          description: Your client ID, found in the dashboard of your Kable account.
+          schema:
+            type: string
+          example: kci_3c90e9ac92c64f31ae8ed84d21e18740
+          required: true
+        - in: header
+          name: Kable-Client-Secret
+          description: Your `LIVE` or `TEST` secret key.
+          schema:
+            type: string
+          example: sk_test.jI92Cbu0.XeHWdYM1VTLy4oLtGMw8wrmpt5q9d04n
+          required: true
+        - in: path
+          name: customerId
+          description: The identifier for the customer. You can pass in *either* the `customerId` (as defined by Kable) or the `clientId` (as defined by you).
+          schema:
+            type: string
+          example: cus_8276e1ac8ed84d21c64f31ae0082fe
+          required: true
+      requestBody:
+        description: Bundle ID to remove.
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                bundleId:
+                  type: string
+                  description: The identifier for the bundle.
+                  example: bun_a23e148584d0463482c961b7f62f824c
+      responses:
+        "200":
+          description: "customer bundle successfully removed"
           content:
             application/json:
               schema:
@@ -1415,6 +1532,305 @@ paths:
           description: "invalid input, object invalid"
         "401":
           description: "unauthorized"
+  /bundles:
+    get:
+      tags:
+        - bundles
+      summary: get all bundles
+      operationId: getAllBundles
+      description: |
+        Retrieve all bundles.
+      parameters:
+        - in: header
+          name: Kable-Client-Id
+          description: Your client ID, found in the dashboard of your Kable account.
+          schema:
+            type: string
+          example: kci_3c90e9ac92c64f31ae8ed84d21e18740
+          required: true
+        - in: header
+          name: Kable-Client-Secret
+          description: Your `LIVE` or `TEST` secret key.
+          schema:
+            type: string
+          example: sk_test.jI92Cbu0.XeHWdYM1VTLy4oLtGMw8wrmpt5q9d04n
+          required: true
+      responses:
+        "200":
+          description: "information about your bundles"
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Bundle"
+        "401":
+          description: "unauthorized"
+
+  /bundles/{bundleId}:
+    get:
+      tags:
+        - bundles
+      summary: get bundle
+      operationId: getBundle
+      description: |
+        Retrieve a bundle.
+      parameters:
+        - in: header
+          name: Kable-Client-Id
+          description: Your client ID, found in the dashboard of your Kable account.
+          schema:
+            type: string
+          example: kci_3c90e9ac92c64f31ae8ed84d21e18740
+          required: true
+        - in: header
+          name: Kable-Client-Secret
+          description: Your `LIVE` or `TEST` secret key.
+          schema:
+            type: string
+          example: sk_test.jI92Cbu0.XeHWdYM1VTLy4oLtGMw8wrmpt5q9d04n
+          required: true
+        - in: path
+          name: bundleId
+          description: The identifier for the bundle. You can pass in *either* the `bundleId` (as defined by Kable) or the `externalId` (as defined by you).
+          schema:
+            type: string
+          example: bun_a23e148584d0463482c961b7f62f824c
+          required: true
+      responses:
+        "200":
+          description: "information about your bundle"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Bundle"
+        "401":
+          description: "unauthorized"
+        "404":
+          description: "not found"
+
+  /bundles/create:
+    post:
+      tags:
+        - bundles
+      summary: create a bundle
+      operationId: createBundle
+      description: |
+        Create a bundle.
+      parameters:
+        - in: header
+          name: Kable-Client-Id
+          description: Your client ID, found in the dashboard of your Kable account.
+          schema:
+            type: string
+          example: kci_3c90e9ac92c64f31ae8ed84d21e18740
+          required: true
+        - in: header
+          name: Kable-Client-Secret
+          description: Your `LIVE` or `TEST` secret key.
+          schema:
+            type: string
+          example: sk_test.jI92Cbu0.XeHWdYM1VTLy4oLtGMw8wrmpt5q9d04n
+          required: true
+      requestBody:
+        description: Information about the bundle to create.
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - name
+              properties:
+                name:
+                  type: string
+                  example: "Professional Package"
+                  description: "A human-readable name for the bundle, visible on dashboards, invoices, and reports."
+                externalId:
+                  type: string
+                  example: "yourcompany_bundle123"
+                  description: "An identifier for the bundle as defined by your API."
+                description:
+                  type: string
+                  example: "The perfect package for businesses starting to scale."
+                  description: "A human-readable description for the bundle, visible on dashboards, invoices, and reports."
+                nickname:
+                  type: string
+                  example: "professional_2022_v2"
+                  description: An additional identifier for the bundle, defined by you, that is *not* visible to customers. If you have multiple *Starter Tier*s for different customers, this is a helpful way to differentiate.
+                planIds:
+                  type: array
+                  items:
+                    type: string
+                  description: "A collection of plans to include in the bundle."
+                  example: ["pln_a23e148584d0463482c961b7f62f824c"]
+                costPerCredit:
+                  type: number
+                  example: 0.25
+                  description: Overage costs per credit for bundle subscribers (only relevant if bundle plans are priced in credits).
+                currency:
+                  type: string
+                  enum:
+                    - "USD"
+                    - "CAD"
+                    - "MXN"
+                    - "EUR"
+                    - "GBP"
+                    - "JPY"
+                    - "INR"
+                    - "CNY"
+                    - "AUD"
+                    - "NZD"
+                  example: "USD"
+                  description: "The three-letter currency code with which this customer pays for plans."
+                metadata:
+                  type: object
+                  example: { "foo": "bar" }
+                  description: "Arbitrary key-value pairs to attach to the object that can be useful for controlling functionality inside your API."
+      responses:
+        "200":
+          description: "bundle successfully created"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Bundle"
+        "400":
+          description: "invalid input, object invalid"
+        "401":
+          description: "unauthorized"
+
+  /bundles/{bundleId}/update:
+    post:
+      tags:
+        - bundles
+      summary: update a bundle
+      operationId: updateBundle
+      description: |
+        Update a bundle.
+      parameters:
+        - in: header
+          name: Kable-Client-Id
+          description: Your client ID, found in the dashboard of your Kable account.
+          schema:
+            type: string
+          example: kci_3c90e9ac92c64f31ae8ed84d21e18740
+          required: true
+        - in: header
+          name: Kable-Client-Secret
+          description: Your `LIVE` or `TEST` secret key.
+          schema:
+            type: string
+          example: sk_test.jI92Cbu0.XeHWdYM1VTLy4oLtGMw8wrmpt5q9d04n
+          required: true
+        - in: path
+          name: bundleId
+          description: The identifier for the bundle. You can pass in *either* the `bundleId` (as defined by Kable) or the `externalId` (as defined by you).
+          schema:
+            type: string
+          example: bun_a23e148584d0463482c961b7f62f824c
+          required: true
+      requestBody:
+        description: Information about the bundle to update.
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  example: "Professional Package"
+                  description: "A human-readable name for the bundle, visible on dashboards, invoices, and reports."
+                externalId:
+                  type: string
+                  example: "yourcompany_bundle123"
+                  description: "An identifier for the bundle as defined by your API."
+                description:
+                  type: string
+                  example: "The perfect package for businesses starting to scale."
+                  description: "A human-readable description for the bundle, visible on dashboards, invoices, and reports."
+                nickname:
+                  type: string
+                  example: "professional_2022_v2"
+                  description: An additional identifier for the bundle, defined by you, that is *not* visible to customers. If you have multiple *Starter Tier*s for different customers, this is a helpful way to differentiate.
+                planIds:
+                  type: array
+                  items:
+                    type: string
+                  description: "A collection of plans to include in the bundle."
+                  example: ["pln_a23e148584d0463482c961b7f62f824c"]
+                costPerCredit:
+                  type: number
+                  example: 0.25
+                  description: Overage costs per credit for bundle subscribers (only relevant if bundle plans are priced in credits).
+                currency:
+                  type: string
+                  enum:
+                    - "USD"
+                    - "CAD"
+                    - "MXN"
+                    - "EUR"
+                    - "GBP"
+                    - "JPY"
+                    - "INR"
+                    - "CNY"
+                    - "AUD"
+                    - "NZD"
+                  example: "USD"
+                  description: "The three-letter currency code with which this customer pays for plans."
+                metadata:
+                  type: object
+                  example: { "foo": "bar" }
+                  description: "Arbitrary key-value pairs to attach to the object that can be useful for controlling functionality inside your API."
+      responses:
+        "200":
+          description: "bundle successfully updated"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Bundle"
+        "400":
+          description: "invalid input, object invalid"
+        "401":
+          description: "unauthorized"
+
+  /bundles/{bundleId}/delete:
+    post:
+      tags:
+        - bundles
+      summary: delete a bundle
+      operationId: deleteBundle
+      description: |
+        Delete a bundle.
+
+        You cannot delete a bundle to which a customer is actively subscribed.
+      parameters:
+        - in: header
+          name: Kable-Client-Id
+          description: Your client ID, found in the dashboard of your Kable account.
+          schema:
+            type: string
+          example: kci_3c90e9ac92c64f31ae8ed84d21e18740
+          required: true
+        - in: header
+          name: Kable-Client-Secret
+          description: Your `LIVE` or `TEST` secret key.
+          schema:
+            type: string
+          example: sk_test.jI92Cbu0.XeHWdYM1VTLy4oLtGMw8wrmpt5q9d04n
+          required: true
+        - in: path
+          name: bundleId
+          description: The identifier for the bundle. You can pass in *either* the `bundleId` (as defined by Kable) or the `externalId` (as defined by you).
+          schema:
+            type: string
+          example: pln_a23e148584d0463482c961b7f62f824c
+          required: true
+      responses:
+        "200":
+          description: "bundle successfully deleted"
+        "400":
+          description: "invalid input, object invalid"
+        "401":
+          description: "unauthorized"
 
   /events/create:
     post:
@@ -1805,6 +2221,11 @@ components:
           items:
             $ref: "#/components/schemas/CustomerPlan"
           description: "A collection of plans to which this customer is currently subscribed."
+        bundles:
+          type: array
+          items:
+            $ref: "#/components/schemas/Bundle"
+          description: "A collection of bundles to which this customer is currently subscribed."
 
     Dimension:
       type: object
@@ -2101,6 +2522,61 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/UsageMetricInterval"
+
+    Bundle:
+      type: object
+      required:
+        - bundleId
+        - name
+      properties:
+        bundleId:
+          type: string
+          example: "bun_a23e148584d0463482c961b7f62f824c"
+          description: "A Kable-defined identifier for the bundle."
+        name:
+          type: string
+          example: "Professional Package"
+          description: "A human-readable name for the bundle, visible on dashboards, invoices, and reports."
+        externalId:
+          type: string
+          example: "yourcompany_bun123"
+          description: "An identifier for the bundle as defined by your API."
+        description:
+          type: string
+          example: "The perfect package for businesses starting to scale"
+          description: "A human-readable description for the bundle, visible on dashboards, invoices, and reports."
+        nickname:
+          type: string
+          example: "professional_2022_v2"
+          description: An additional identifier for the bundle, defined by you, that is *not* visible to customers. If you have different *Monthly Active Users Bundle*s for different cohorts of customers, this is a useful place to differentiate those.
+        plans:
+          type: array
+          items:
+            $ref: "#/components/schemas/Plan"
+          description: "A collection of plans in the bundle."
+        costPerCredit:
+          type: number
+          example: 0.25
+          description: Overage costs per credit for bundle subscribers (only relevant if bundle plans are priced in credits).
+        currency:
+          type: string
+          enum:
+          - "USD"
+          - "CAD"
+          - "MXN"
+          - "EUR"
+          - "GBP"
+          - "JPY"
+          - "INR"
+          - "CNY"
+          - "AUD"
+          - "NZD"
+          example: "USD"
+          description: "The three-letter currency code with which this customer pays for plans."
+        metadata:
+          type: object
+          example: { "foo": "bar" }
+          description: "Arbitrary key-value pairs to attach to the object that can be useful for controlling functionality inside your API."
 
     UsageMetricInterval:
       type: object
