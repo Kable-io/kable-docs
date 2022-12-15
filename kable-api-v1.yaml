@@ -1,2607 +1,2375 @@
 openapi: 3.0.0
-servers:
-  # Added by API Auto Mocking Plugin
-  - description: Kable Live
-    url: "https://live.kable.io/api/v1"
-  - description: Kable Test
-    url: "https://test.kable.io/api/v1"
-
-info:
-  description: |
-    The Kable API allows developers to manage **customers** and **API keys** and record **events** about their API.
-
-
-    ## API Host and Environments
-
-    Kable is accessible in Live and Test environments for authentication and metering of client API requests. You will have separate API keys to access each environment.
-
-    You should only use Kable's Live environment for your own production data. All other configured environments should use Kable's Test environment.
-
-
-    ## API Protocols and Headers
-
-    All requests to the Kable API are made over HTTPS TLS v1.2+ to ensure security. Calls made over HTTP will fail. Any requests without proper authentication will also fail.
-
-    The Kable API uses standard JSON for requests and responses. Be sure to set both the `Content-Type` and `Accept` headers on each request to application/json.
-
-    Each Kable API response includes a `requestId` as the `X-REQUEST-ID` response header. The `requestId` is included regardless whether the API request succeeded or failed. You can use this requestId to help with debugging or when contacting support regarding a specific API call.
-
-
-    ## API Keys
-
-    There are two types of API keys on Kable.
-
-    ### Kable Keys
-    Kable Keys are the keys you, the Kable customer, use to interact with Kable. These keys help us ensure that only you are interacting with Kable on your behalf. You can find your keys on the Company page of the dashboard after you sign up.
-
-    Kable Keys should be included in every request to the Kable API. You must provide your client ID as the `KABLE-CLIENT-ID` header and your secret key as the `KABLE-CLIENT-SECRET` header on each request to Kable. If you are using a language-specific Kable library, you will initialize the SDK using these keys.
-
-    ### Customer Keys
-    Customer Keys are the keys your customers use to interact with your API. Customer Keys are authenticated by Kable when a customer makes a request to your API if you use Kable's authentication services. Customers must provide their client ID (defined as `clientId` when you create the customer) as the `X-CLIENT-ID` header and their secret key as the `X-API-KEY` header on each request to your API that Kable is to authenticate.
-
-
-    ## API Versioning
-
-    All Kable endpoints are versioned. After the host, each API can be found at `/api/vX/...` where X is the API version.
-
-    We strive to ensure that changes to the Kable API are backward compatible. Sometimes, though, we must break from older design paradigms to make the product better. When this happens, a new version of the API is released.
-
-    The current version of Kable is **v1**.
-
-  version: 1.2.1
-  title: Kable API
-  contact:
-    email: contact@kable.io
-  # license:
-  #   name: Apache 2.0
-  #   url: 'http://www.apache.org/licenses/LICENSE-2.0.html'
-tags:
-  - name: customers
-    description: The customers API allows developers to programmatically create customers on Kable. Call this API when a customer signs up for your API product. Note that customer creation can also be handled in the Customers tab of your dashboard.
-  - name: keys
-    description: The key management API allows developers to create and revoke API keys. These functions are fully self-serviceable through the Kable dashboard, but are also made available through the public API.
-  - name: events
-    description: |
-      The events API allows developers to record events that occur in their API. Events are at the core of Kable's metering engine. All usage metrics that Kable reports are based on events.
-
-      For a closer look at events on Kable, we suggest reading the Events overview documentation.
-  - name: tokens
-    description: The token API allows developers to create short-lived access tokens that grant temporary permissions to read usage data from Kable. This is useful if want to embed Kable dashboards within your developer portal to give your customers visibility into their usage of your product.
-
 paths:
-  /customers:
+  /api/v1/bundles:
     get:
-      tags:
-        - customers
-      summary: get all customers
-      operationId: getAllCustomers
-      description: |
-        Retrieve all customers.
-      parameters:
-        - in: header
-          name: Kable-Client-Id
-          description: Your client ID, found in the dashboard of your Kable account.
-          schema:
-            type: string
-          example: kci_3c90e9ac92c64f31ae8ed84d21e18740
-          required: true
-        - in: header
-          name: Kable-Client-Secret
-          description: Your `LIVE` or `TEST` secret key. Customers exist across all environments, so it does not matter which environment you use to fetch customers.
-          schema:
-            type: string
-          example: sk_test.jI92Cbu0.XeHWdYM1VTLy4oLtGMw8wrmpt5q9d04n
-          required: true
-      responses:
-        "200":
-          description: "information about your customers"
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/Customer"
-        "401":
-          description: "unauthorized"
-
-  /customers/{customerId}:
-    get:
-      tags:
-        - customers
-      summary: get customer
-      operationId: getCustomer
-      description: |
-        Retrieve a customer.
-      parameters:
-        - in: header
-          name: Kable-Client-Id
-          description: Your client ID, found in the dashboard of your Kable account.
-          schema:
-            type: string
-          example: kci_3c90e9ac92c64f31ae8ed84d21e18740
-          required: true
-        - in: header
-          name: Kable-Client-Secret
-          description: Your `LIVE` or `TEST` secret key. Customers exist across all environments, so it does not matter which environment you use to fetch customers.
-          schema:
-            type: string
-          example: sk_test.jI92Cbu0.XeHWdYM1VTLy4oLtGMw8wrmpt5q9d04n
-          required: true
-        - in: path
-          name: customerId
-          description: The identifier for the customer. You can pass in *either* the `customerId` (as defined by Kable) or the `clientId` (as defined by you).
-          schema:
-            type: string
-          example: yourcompanyuser_1234567890
-          required: true
-      responses:
-        "200":
-          description: "information about your customer"
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Customer"
-        "401":
-          description: "unauthorized"
-        "404":
-          description: "not found"
-
-  /customers/create:
-    post:
-      tags:
-        - customers
-      summary: create a customer
-      operationId: createCustomer
-      description: |
-        Create a new customer. Call this when a new customer signs up for your API.
-
-        You can this API in the `LIVE` or `TEST` environment and the outcome will be the same. Customers exist across environments. Handling of subsequent customer requests in a given environment are governed by the environment-specific keys (`LIVE` or `TEST`) they use to authenticate.
-
-        Note that clients can also be created manually from within the Customers tab of your Kable dashboard.
-      parameters:
-        - in: header
-          name: Kable-Client-Id
-          description: Your client ID, found in the dashboard of your Kable account.
-          schema:
-            type: string
-          example: kci_3c90e9ac92c64f31ae8ed84d21e18740
-          required: true
-        - in: header
-          name: Kable-Client-Secret
-          description: Your `LIVE` or `TEST` secret key. Customers exist across all environments, so it does not matter which environment you use to create customers. You will be able to record usage data for each customer separately in `LIVE` and `TEST` environments.
-          schema:
-            type: string
-          example: sk_test.jI92Cbu0.XeHWdYM1VTLy4oLtGMw8wrmpt5q9d04n
-          required: true
-        - in: query
-          name: keys
-          description: When true, Kable will create API keys for this customer. (This is only necessary if you use Kable for authentication.)
-          schema:
-            type: boolean
-          example: true
-          required: false
-        - in: query
-          name: stripe
-          description: |
-            When true, Kable will also create and attach a Stripe customer.
-
-            If your account is not connected to Stripe, the request will fail. If you provide a `stripeCustomerId` in the request body, this query parameter will be ignored.
-          schema:
-            type: boolean
-          example: true
-          required: false
-
-      requestBody:
-        description: |
-          Information about the customer you are creating.
-
-          Client IDs should correspond to identifiers in your own application. If you are migrating from another authentication system, this is often the same `clientId` that the customer was using before. Each client ID must be unique, as Kable uses this field to uniquely identify customers. Company names can be edited later in the dashboard, but client IDs cannot be changed.
-        content:
-          application/json:
-            schema:
-              type: object
-              required:
-                - clientId
-                - companyName
-              properties:
-                clientId:
-                  type: string
-                  description: "A unique identifier for the customer, defined by you. This usually corresponds to your own internal unique identifier for customers, and is the identifier by which Kable attributes customer usage."
-                  example: yourcompanyuser_1234567890
-                companyName:
-                  type: string
-                  description: "The name of the customer, visible on dashboards, invoices, and reports."
-                  example: Awesome Corp
-                currency:
-                  type: string
-                  enum:
-                    - "USD"
-                    - "CAD"
-                    - "MXN"
-                    - "EUR"
-                    - "GBP"
-                    - "JPY"
-                    - "INR"
-                    - "CNY"
-                    - "AUD"
-                    - "NZD"
-                  example: "USD"
-                stripeCustomerId:
-                  type: string
-                  description: "The customer's Stripe `customer_id`, if any, for automatic invoice processing through Stripe."
-                  example: cus_a91565WBFwU30c
-                planIds:
-                  type: array
-                  items:
-                    type: string
-                  description: "A collection of plans to which this customer will be subscribed."
-                  example: ["pln_a23e148584d0463482c961b7f62f824c"]
-                bundleIds:
-                  type: array
-                  items:
-                    type: string
-                  description: "A collection of bundles to which this customer will be subscribed."
-                  example: ["bun_a23e148584d0463482c961b7f62f824c"]
-
-      responses:
-        "200":
-          description: "new customer successfully created"
-          content:
-            application/json:
-              schema:
-                type: object
-                required:
-                  - customerId
-                  - clientId
-                  - companyName
-                properties:
-                  kableClientId:
-                    type: string
-                    example: "kci_3c90e9ac92c64f31ae8ed84d21e18740"
-                  customerId:
-                    type: string
-                    example: "cus_8276e1ac8ed84d21c64f31ae0082fe"
-                  clientId:
-                    type: string
-                    example: "yourcompanyuser_1234567890"
-                  companyName:
-                    type: string
-                    example: "Awesome Corp"
-                  currency:
-                    type: string
-                    enum:
-                      - "USD"
-                      - "CAD"
-                      - "MXN"
-                      - "EUR"
-                      - "GBP"
-                      - "JPY"
-                      - "INR"
-                      - "CNY"
-                      - "AUD"
-                      - "NZD"
-                    example: "USD"
-                    description: "Three-letter currency code."
-                  status:
-                    type: string
-                    enum:
-                      - ACTIVE
-                      - CANCELLED
-                    example: "ACTIVE"
-                  nextInvoiceDate:
-                    type: string
-                    format: date-time
-                    example: "2022-02-09T00:00:00.000Z"
-                  stripeCustomerId:
-                    type: string
-                    example: "cus_a91565WBFwU30c"
-                  # created:
-                  #   type: string
-                  #   example: '2022-01-09T10:42:44.588Z'
-                  # modified:
-                  #   type: string
-                  #   example: '2022-01-09T10:42:44.588Z'
-                  plans:
-                    type: array
-                    items:
-                      $ref: "#/components/schemas/CustomerPlan"
-                  keys:
-                    type: array
-                    items:
-                      $ref: "#/components/schemas/Key"
-        "400":
-          description: "invalid input, object invalid"
-        "401":
-          description: "unauthorized"
-
-  /customers/{customerId}/update:
-    post:
-      tags:
-        - customers
-      summary: update a customer
-      operationId: updateCustomer
-      description: |
-        Update a customer. Call this to programmatically update information about an existing customer.
-
-        Note that clients can also be updated manually from within the Customers tab of your Kable dashboard.
-      parameters:
-        - in: header
-          name: Kable-Client-Id
-          description: Your client ID, found in the dashboard of your Kable account.
-          schema:
-            type: string
-          example: kci_3c90e9ac92c64f31ae8ed84d21e18740
-          required: true
-        - in: header
-          name: Kable-Client-Secret
-          description: Your `LIVE` or `TEST` secret key. Customers exist across all environments, so it does not matter which environment you use to create customers. Each customer will have separate keys for `LIVE` and `TEST` environments of your API.
-          schema:
-            type: string
-          example: sk_test.jI92Cbu0.XeHWdYM1VTLy4oLtGMw8wrmpt5q9d04n
-          required: true
-        - in: path
-          name: customerId
-          description: The identifier for the customer. You can pass in *either* the `customerId` (as defined by Kable) or the `clientId` (as defined by you).
-          schema:
-            type: string
-          example: cus_8276e1ac8ed84d21c64f31ae0082fe
-          required: true
-      requestBody:
-        description: Information to update about the customer.
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                companyName:
-                  type: string
-                  description: "The name of the customer, visible on dashboards, invoices, and reports."
-                  example: Awesome Corp
-                currency:
-                  type: string
-                  description: "The currency with which this customer pays for plans."
-                  example: USD
-                stripeCustomerId:
-                  type: string
-                  description: "The customer's Stripe `customer_id`, if any, for automatic invoice processing through Stripe."
-                  example: cus_a91565WBFwU30c
-      responses:
-        "200":
-          description: "customer successfully updated"
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Customer"
-        "400":
-          description: "invalid input, object invalid"
-        "401":
-          description: "unauthorized"
-
-  /customers/{customerId}/cancel:
-    post:
-      tags:
-        - customers
-      summary: cancel a customer
-      operationId: cancelCustomer
-      description: |
-        Cancelling a customer will update its status to `"CANCELLED"` and terminate all future billing.
-      parameters:
-        - in: header
-          name: Kable-Client-Id
-          description: Your client ID, found in the dashboard of your Kable account.
-          schema:
-            type: string
-          example: kci_3c90e9ac92c64f31ae8ed84d21e18740
-          required: true
-        - in: header
-          name: Kable-Client-Secret
-          description: Your `LIVE` or `TEST` secret key. Customers exist across all environments, so it does not matter which environment you use to create customers. Each customer will have separate keys for `LIVE` and `TEST` environments of your API.
-          schema:
-            type: string
-          example: sk_test.jI92Cbu0.XeHWdYM1VTLy4oLtGMw8wrmpt5q9d04n
-          required: true
-        - in: path
-          name: customerId
-          description: The identifier for the customer. You can pass in *either* the `customerId` (as defined by Kable) or the `clientId` (as defined by you).
-          schema:
-            type: string
-          example: cus_8276e1ac8ed84d21c64f31ae0082fe
-          required: true
-      responses:
-        "200":
-          description: "customer successfully cancelled"
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Customer"
-        "400":
-          description: "invalid input, object invalid"
-        "401":
-          description: "unauthorized"
-
-  /customers/{customerId}/delete:
-    post:
-      tags:
-        - customers
-      summary: delete a customer
-      operationId: deleteCustomer
-      description: |
-        Deleting a customer will erase all record of the customer identity in Kable. This action is irreversible, and should only be used for the purposes of GDPR / CCPA.
-      parameters:
-        - in: header
-          name: Kable-Client-Id
-          description: Your client ID, found in the dashboard of your Kable account.
-          schema:
-            type: string
-          example: kci_3c90e9ac92c64f31ae8ed84d21e18740
-          required: true
-        - in: header
-          name: Kable-Client-Secret
-          description: Your `LIVE` or `TEST` secret key. Customers exist across all environments, so it does not matter which environment you use to create customers. Each customer will have separate keys for `LIVE` and `TEST` environments of your API.
-          schema:
-            type: string
-          example: sk_test.jI92Cbu0.XeHWdYM1VTLy4oLtGMw8wrmpt5q9d04n
-          required: true
-        - in: path
-          name: customerId
-          description: The identifier for the customer. You can pass in *either* the `customerId` (as defined by Kable) or the `clientId` (as defined by you).
-          schema:
-            type: string
-          example: cus_8276e1ac8ed84d21c64f31ae0082fe
-          required: true
-      responses:
-        "200":
-          description: "customer successfully deleted"
-        "400":
-          description: "invalid input, object invalid"
-        "401":
-          description: "unauthorized"
-
-  /customers/{customerId}/plans/add:
-    post:
-      tags:
-        - customers
-      summary: add a plan(s) to a customer
-      operationId: addCustomerPlans
-      description: |
-        Add a plan(s) to a customer.
-
-        Note that customer plans can also be added and removed manually from within the Customers tab of your Kable dashboard.
-      parameters:
-        - in: header
-          name: Kable-Client-Id
-          description: Your client ID, found in the dashboard of your Kable account.
-          schema:
-            type: string
-          example: kci_3c90e9ac92c64f31ae8ed84d21e18740
-          required: true
-        - in: header
-          name: Kable-Client-Secret
-          description: Your `LIVE` or `TEST` secret key. Customers exist across all environments, so it does not matter which environment you use to create customers. Each customer will have separate keys for `LIVE` and `TEST` environments of your API.
-          schema:
-            type: string
-          example: sk_test.jI92Cbu0.XeHWdYM1VTLy4oLtGMw8wrmpt5q9d04n
-          required: true
-        - in: path
-          name: customerId
-          description: The identifier for the customer. You can pass in *either* the `customerId` (as defined by Kable) or the `clientId` (as defined by you).
-          schema:
-            type: string
-          example: cus_8276e1ac8ed84d21c64f31ae0082fe
-          required: true
-      requestBody:
-        description: Plan ID(s) to add. You can provide either a singular `planId` or a list of `planIds`.
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                planId:
-                  type: string
-                  description: The identifier for a single plan.
-                  example: pln_a23e148584d0463482c961b7f62f824c
-                planIds:
-                  type: array
-                  description: The identifiers for many plans.
-                  items:
-                    type: string
-                  example:
-                    [
-                      "pln_a23e148584d0463482c961b7f62f824c",
-                      "pln_b177473b31d44c3b8a2a365618a3deca",
-                    ]
-      responses:
-        "200":
-          description: "customer plan successfully added"
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Customer"
-        "400":
-          description: "invalid input, object invalid"
-        "401":
-          description: "unauthorized"
-
-  /customers/{customerId}/plans/remove:
-    post:
-      tags:
-        - customers
-      summary: remove a plan(s) from a customer
-      operationId: removeCustomerPlans
-      description: |
-        Remove a plan(s) from a customer.
-
-        Note that customer plans can also be added and removed manually from within the Customers tab of your Kable dashboard.
-      parameters:
-        - in: header
-          name: Kable-Client-Id
-          description: Your client ID, found in the dashboard of your Kable account.
-          schema:
-            type: string
-          example: kci_3c90e9ac92c64f31ae8ed84d21e18740
-          required: true
-        - in: header
-          name: Kable-Client-Secret
-          description: Your `LIVE` or `TEST` secret key. Customers exist across all environments, so it does not matter which environment you use to create customers. Each customer will have separate keys for `LIVE` and `TEST` environments of your API.
-          schema:
-            type: string
-          example: sk_test.jI92Cbu0.XeHWdYM1VTLy4oLtGMw8wrmpt5q9d04n
-          required: true
-        - in: path
-          name: customerId
-          description: The identifier for the customer. You can pass in *either* the `customerId` (as defined by Kable) or the `clientId` (as defined by you).
-          schema:
-            type: string
-          example: cus_8276e1ac8ed84d21c64f31ae0082fe
-          required: true
-      requestBody:
-        description: Plan ID(s) to remove. You can provide either a singular `planId` or a list of `planIds`.
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                planId:
-                  type: string
-                  description: The identifier for a single plan.
-                  example: pln_a23e148584d0463482c961b7f62f824c
-                planIds:
-                  type: array
-                  description: The identifiers for many plans.
-                  items:
-                    type: string
-                  example:
-                    [
-                      "pln_a23e148584d0463482c961b7f62f824c",
-                      "pln_b177473b31d44c3b8a2a365618a3deca",
-                    ]
-      responses:
-        "200":
-          description: "customer plan successfully removed"
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Customer"
-        "400":
-          description: "invalid input, object invalid"
-        "401":
-          description: "unauthorized"
-
-  /customers/{customerId}/bundles/add:
-    post:
-      tags:
-        - customers
-      summary: add a bundle to a customer
-      operationId: addCustomerBundle
-      description: |
-        Add a bundle to a customer.
-
-        Note that customer bundles can also be added and removed manually from within the Customers tab of your Kable dashboard.
-      parameters:
-        - in: header
-          name: Kable-Client-Id
-          description: Your client ID, found in the dashboard of your Kable account.
-          schema:
-            type: string
-          example: kci_3c90e9ac92c64f31ae8ed84d21e18740
-          required: true
-        - in: header
-          name: Kable-Client-Secret
-          description: Your `LIVE` or `TEST` secret key.
-          schema:
-            type: string
-          example: sk_test.jI92Cbu0.XeHWdYM1VTLy4oLtGMw8wrmpt5q9d04n
-          required: true
-        - in: path
-          name: customerId
-          description: The identifier for the customer. You can pass in *either* the `customerId` (as defined by Kable) or the `clientId` (as defined by you).
-          schema:
-            type: string
-          example: cus_8276e1ac8ed84d21c64f31ae0082fe
-          required: true
-      requestBody:
-        description: Bundle ID to add.
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                bundleId:
-                  type: string
-                  description: The identifier for the bundle.
-                  example: bun_a23e148584d0463482c961b7f62f824c
-      responses:
-        "200":
-          description: "customer bundle successfully added"
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Customer"
-        "400":
-          description: "invalid input, object invalid"
-        "401":
-          description: "unauthorized"
-
-  /customers/{customerId}/bundles/remove:
-    post:
-      tags:
-        - customers
-      summary: remove a bundle from a customer
-      operationId: removeCustomerBundle
-      description: |
-        Remove a bundle from a customer.
-
-        Note that customer bundles can also be added and removed manually from within the Customers tab of your Kable dashboard.
-      parameters:
-        - in: header
-          name: Kable-Client-Id
-          description: Your client ID, found in the dashboard of your Kable account.
-          schema:
-            type: string
-          example: kci_3c90e9ac92c64f31ae8ed84d21e18740
-          required: true
-        - in: header
-          name: Kable-Client-Secret
-          description: Your `LIVE` or `TEST` secret key.
-          schema:
-            type: string
-          example: sk_test.jI92Cbu0.XeHWdYM1VTLy4oLtGMw8wrmpt5q9d04n
-          required: true
-        - in: path
-          name: customerId
-          description: The identifier for the customer. You can pass in *either* the `customerId` (as defined by Kable) or the `clientId` (as defined by you).
-          schema:
-            type: string
-          example: cus_8276e1ac8ed84d21c64f31ae0082fe
-          required: true
-      requestBody:
-        description: Bundle ID to remove.
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                bundleId:
-                  type: string
-                  description: The identifier for the bundle.
-                  example: bun_a23e148584d0463482c961b7f62f824c
-      responses:
-        "200":
-          description: "customer bundle successfully removed"
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Customer"
-        "400":
-          description: "invalid input, object invalid"
-        "401":
-          description: "unauthorized"
-
-  /customers/{customerId}/payment_methods/add:
-    post:
-      tags:
-        - customers
-      summary: add a customer payment method
-      operationId: addCustomerPaymentMethod
-      description: |
-        Collect a payment method / credit card for a customer.
-
-        Calling this method creates a short-lived [Stripe Checkout Session](https://stripe.com/payments/checkout) to allow your customers to enter payment method details. This API will return a Stripe URL to which you should redirect your customers to securely add their credit card information. Upon completion, Stripe will redirect back to the provided URLs.
-      parameters:
-        - in: header
-          name: Kable-Client-Id
-          description: Your client ID, found in the dashboard of your Kable account.
-          schema:
-            type: string
-          example: kci_3c90e9ac92c64f31ae8ed84d21e18740
-          required: true
-        - in: header
-          name: Kable-Client-Secret
-          description: Your `LIVE` or `TEST` secret key. Customers exist across all environments, so it does not matter which environment you use to create customers. Each customer will have separate keys for `LIVE` and `TEST` environments of your API.
-          schema:
-            type: string
-          example: sk_test.jI92Cbu0.XeHWdYM1VTLy4oLtGMw8wrmpt5q9d04n
-          required: true
-        - in: path
-          name: customerId
-          description: The identifier for the customer. You can pass in *either* the `customerId` (as defined by Kable) or the `clientId` (as defined by you).
-          schema:
-            type: string
-          example: cus_8276e1ac8ed84d21c64f31ae0082fe
-          required: true
-      requestBody:
-        description: URLs to which to redirect after payment method details are stored in Stripe (and completion of Stripe Checkout Session).
-        content:
-          application/json:
-            schema:
-              type: object
-              required:
-                - successUrl
-                - cancelUrl
-              properties:
-                successUrl:
-                  type: string
-                  example: https://yourcompany.com/signup/complete?success=true
-                cancelUrl:
-                  type: string
-                  example: https://yourcompany.com/signup/failure?success=false
-      responses:
-        "200":
-          description: "Stripe Checkout Session successfully created to collect customer payment method"
-          content:
-            application/json:
-              schema:
-                type: object
-                required:
-                  - url
-                properties:
-                  url:
-                    type: string
-                    example: "https://checkout.stripe.com/pay/cs_test_c1PJzZEmw9vH1x978D..."
-        "400":
-          description: "invalid input, customer or company Stripe configuration are invalid"
-        "401":
-          description: "unauthorized"
-
-  /customers/{customerId}/credits/balance:
-    get:
-      tags:
-        - credit grants
-      summary: get a customer's credit balance
-      operationId: getCustomerCreditBalance
-      description: |
-        Get a customer's available credit balance.
-      parameters:
-        - in: header
-          name: Kable-Client-Id
-          description: Your client ID, found in the dashboard of your Kable account.
-          schema:
-            type: string
-          example: kci_3c90e9ac92c64f31ae8ed84d21e18740
-          required: true
-        - in: header
-          name: Kable-Client-Secret
-          description: Your `LIVE` or `TEST` secret key. Customers exist across all environments, so it does not matter which environment you use to create customers. Each customer will have separate keys for `LIVE` and `TEST` environments of your API.
-          schema:
-            type: string
-          example: sk_test.jI92Cbu0.XeHWdYM1VTLy4oLtGMw8wrmpt5q9d04n
-          required: true
-        - in: path
-          name: customerId
-          description: The identifier for the customer. You can pass in *either* the `customerId` (as defined by Kable) or the `clientId` (as defined by you).
-          schema:
-            type: string
-          example: cus_8276e1ac8ed84d21c64f31ae0082fe
-          required: true
-      responses:
-        "200":
-          description: "customer credit grant balance"
-          content:
-            application/json:
-              schema:
-                type: object
-                required:
-                  - available
-                properties:
-                  available:
-                    type: number
-                    description: The customer's available credit grant balance
-                    example: 75
-
-        "400":
-          description: "invalid input"
-        "401":
-          description: "unauthorized"
-
-  /customers/{customerId}/credits/create:
-    post:
-      tags:
-        - credit grants
-      summary: create a new credit grant for a customer
-      operationId: createCreditGrant
-      description: |
-        Add a credit grant to a customer.
-      parameters:
-        - in: header
-          name: Kable-Client-Id
-          description: Your client ID, found in the dashboard of your Kable account.
-          schema:
-            type: string
-          example: kci_3c90e9ac92c64f31ae8ed84d21e18740
-          required: true
-        - in: header
-          name: Kable-Client-Secret
-          description: Your `LIVE` or `TEST` secret key. Customers exist across all environments, so it does not matter which environment you use to create customers. Each customer will have separate keys for `LIVE` and `TEST` environments of your API.
-          schema:
-            type: string
-          example: sk_test.jI92Cbu0.XeHWdYM1VTLy4oLtGMw8wrmpt5q9d04n
-          required: true
-        - in: path
-          name: customerId
-          description: The identifier for the customer. You can pass in *either* the `customerId` (as defined by Kable) or the `clientId` (as defined by you).
-          schema:
-            type: string
-          example: cus_8276e1ac8ed84d21c64f31ae0082fe
-          required: true
-      requestBody:
-        description: Information about the credit grant to create.
-        content:
-          application/json:
-            schema:
-              type: object
-              required:
-                - grantAmount
-              properties:
-                grantAmount:
-                  type: number
-                  example: 100
-                  description: "The number of credits to create in the grant."
-                description:
-                  type: string
-                  example: "A top-up grant to buy more API credits."
-                  description: "A human-readable description that explains why the credit grant is being created."
-                chargeAmount:
-                  type: number
-                  example: 199.99
-                  description: |
-                    An optional amount to charge the customer (in the customer's configured `currency`) before issuing a credit grant.
-
-                    When the `chargeAmount` field is supplied, Kable will attempt to charge the customer immediately through Stripe before issuing the grant. Therefore, when specifying a `chargeAmount`, the customer must have a Stripe integration defined and have a default payment card on-file.
-      responses:
-        "200":
-          description: "credit grant successfully created"
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/CreditGrant"
-        "400":
-          description: "invalid input"
-        "401":
-          description: "unauthorized"
-
-  # /keys/create:
-  #   post:
-  #     tags:
-  #       - keys
-  #     summary: create a customer API key
-  #     operationId: createKey
-  #     description: |
-  #       Generate a new API key for a customer in a given environment.
-
-  #       Note that this can also be done through the dashboard.
-
-  #       Also note that keys are only displayed **once**. When a key is created, the `key` in the response body is the **only** time that key will ever be visible. (When creating keys through the dashboard, keys are also only shown once.)
-  #     parameters:
-  #       - in: header
-  #         name: Kable-Client-Id
-  #         description: Your client ID, found in the dashboard of your Kable account.
-  #         schema:
-  #           type: string
-  #         example: kci_3c90e9ac92c64f31ae8ed84d21e18740
-  #         required: true
-  #       - in: header
-  #         name: Kable-Client-Secret
-  #         description: Your `LIVE` or `TEST` secret key, depending on the environment in which the key is being created.
-  #         schema:
-  #           type: string
-  #         example: sk_test.jI92Cbu0.XeHWdYM1VTLy4oLtGMw8wrmpt5q9d04n
-  #         required: true
-  #     requestBody:
-  #       description: The customer and environment for which to create key
-  #       content:
-  #         application/json:
-  #           schema:
-  #             type: object
-  #             required:
-  #               - clientId
-  #               - environment
-  #             properties:
-  #               clientId:
-  #                 type: string
-  #                 example: "yourcompanyuser_1234567890"
-  #               environment:
-  #                 type: string
-  #                 example: "TEST"
-  #     responses:
-  #       "200":
-  #         description: "new key successfully created"
-  #         content:
-  #           application/json:
-  #             schema:
-  #               type: object
-  #               required:
-  #                 - clientId
-  #                 - environment
-  #                 - key
-  #               properties:
-  #                 clientId:
-  #                   type: string
-  #                   example: "yourcompanyuser_1234567890"
-  #                 environment:
-  #                   type: string
-  #                   example: "TEST"
-  #                 key:
-  #                   type: string
-  #                   example: "sk_test.M1VTLy4o.qAbs56udYLtGMw6war2gImpt5qjI92Ck"
-  #                 # created:
-  #                 #   type: string
-  #                 #   example: '2022-01-09T10:42:44.588Z'
-  #       "400":
-  #         description: "invalid input, object invalid"
-  #       "401":
-  #         description: "unauthorized"
-
-  # /keys/revoke:
-  #   post:
-  #     tags:
-  #       - keys
-  #     summary: revoke a customer API key(s)
-  #     operationId: revokeKey
-  #     description: |
-  #       Revoke an API key (or keys) from a customer in a given environment
-
-  #       Note that this can also be done through the dashboard.
-  #     parameters:
-  #       - in: header
-  #         name: Kable-Client-Id
-  #         description: Your client ID, found in the dashboard of your Kable account.
-  #         schema:
-  #           type: string
-  #         example: kci_3c90e9ac92c64f31ae8ed84d21e18740
-  #         required: true
-  #       - in: header
-  #         name: Kable-Client-Secret
-  #         description: Your `LIVE` or `TEST` secret key, depending on the environment in which the key is being created.
-  #         schema:
-  #           type: string
-  #         example: sk_test.jI92Cbu0.XeHWdYM1VTLy4oLtGMw8wrmpt5q9d04n
-  #         required: true
-
-  #     requestBody:
-  #       description: |
-  #         The customer and environment for which to revoke key(s).
-
-  #         By default, all keys for a given customer and environment are revoked. To revoke an individual key, include the optional `key` parameter to revoke a single, specified key.
-
-  #         By default, revoked keys are useable for 10 minutes following revocation (to give developers time to update configurations). To revoke a key(s) immediately, use the optional `immediately` parameter.
-  #       content:
-  #         application/json:
-  #           schema:
-  #             type: object
-  #             required:
-  #               - clientId
-  #               - environment
-  #             properties:
-  #               clientId:
-  #                 type: string
-  #                 example: "yourcompanyuser_1234567890"
-  #               environment:
-  #                 type: string
-  #                 example: TEST
-  #               key:
-  #                 type: string
-  #                 example: "sk_test.M1VTLy4o.qAbs56udYLtGMw6war2gImpt5qjI92Ck"
-  #               immediately:
-  #                 type: boolean
-  #                 example: false
-  #     responses:
-  #       "200":
-  #         description: "key(s) successfully revoked"
-  #       "400":
-  #         description: "invalid input, object invalid"
-  #       "401":
-  #         description: "unauthorized"
-
-  /dimensions:
-    get:
-      tags:
-        - dimensions
-      summary: get all dimensions
-      operationId: getAllDimensions
-      description: |
-        Retrieve all dimensions.
-      parameters:
-        - in: header
-          name: Kable-Client-Id
-          description: Your client ID, found in the dashboard of your Kable account.
-          schema:
-            type: string
-          example: kci_3c90e9ac92c64f31ae8ed84d21e18740
-          required: true
-        - in: header
-          name: Kable-Client-Secret
-          description: Your `LIVE` or `TEST` secret key. Customers exist across all environments, so it does not matter which environment you use to fetch customers.
-          schema:
-            type: string
-          example: sk_test.jI92Cbu0.XeHWdYM1VTLy4oLtGMw8wrmpt5q9d04n
-          required: true
-      responses:
-        "200":
-          description: "information about your dimensions"
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/Dimension"
-        "401":
-          description: "unauthorized"
-
-  /dimensions/{dimensionId}:
-    get:
-      tags:
-        - dimensions
-      summary: get dimension
-      operationId: getDimension
-      description: |
-        Retrieve a dimension.
-      parameters:
-        - in: header
-          name: Kable-Client-Id
-          description: Your client ID, found in the dashboard of your Kable account.
-          schema:
-            type: string
-          example: kci_3c90e9ac92c64f31ae8ed84d21e18740
-          required: true
-        - in: header
-          name: Kable-Client-Secret
-          description: Your `LIVE` or `TEST` secret key. Customers exist across all environments, so it does not matter which environment you use to fetch customers.
-          schema:
-            type: string
-          example: sk_test.jI92Cbu0.XeHWdYM1VTLy4oLtGMw8wrmpt5q9d04n
-          required: true
-        - in: path
-          name: dimensionId
-          description: The identifier for the dimension. You can pass in *either* the `dimensionId` (as defined by Kable) or the `key` (as defined by you).
-          schema:
-            type: string
-          example: userId
-          required: true
-      responses:
-        "200":
-          description: "information about your dimension"
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Dimension"
-        "401":
-          description: "unauthorized"
-        "404":
-          description: "not found"
-
-  /dimensions/create:
-    post:
-      tags:
-        - dimensions
-      summary: create a dimension
-      operationId: createDimension
-      description: |
-        Create a dimension.
-      parameters:
-        - in: header
-          name: Kable-Client-Id
-          description: Your client ID, found in the dashboard of your Kable account.
-          schema:
-            type: string
-          example: kci_3c90e9ac92c64f31ae8ed84d21e18740
-          required: true
-        - in: header
-          name: Kable-Client-Secret
-          description: Your `LIVE` or `TEST` secret key. Customers exist across all environments, so it does not matter which environment you use to create customers. Each customer will have separate keys for `LIVE` and `TEST` environments of your API.
-          schema:
-            type: string
-          example: sk_test.jI92Cbu0.XeHWdYM1VTLy4oLtGMw8wrmpt5q9d04n
-          required: true
-      requestBody:
-        description: Information about the dimension to create.
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                key:
-                  type: string
-                  description: The key by which Kable identifies the dimension in your usage events.
-                  example: userId
-                name:
-                  type: string
-                  description: A human-readable name for the dimension which will be visible in dashboards and on invoices. Dimension names should be singular, not plural (ie "User," not "Users").
-                  example: User
-      responses:
-        "200":
-          description: "dimension successfully created"
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Dimension"
-        "400":
-          description: "invalid input, object invalid"
-        "401":
-          description: "unauthorized"
-
-  /dimensions/{dimensionId}/update:
-    post:
-      tags:
-        - dimensions
-      summary: update a dimension
-      operationId: updateDimension
-      description: |
-        Update a dimension.
-      parameters:
-        - in: header
-          name: Kable-Client-Id
-          description: Your client ID, found in the dashboard of your Kable account.
-          schema:
-            type: string
-          example: kci_3c90e9ac92c64f31ae8ed84d21e18740
-          required: true
-        - in: header
-          name: Kable-Client-Secret
-          description: Your `LIVE` or `TEST` secret key. Customers exist across all environments, so it does not matter which environment you use to create customers. Each customer will have separate keys for `LIVE` and `TEST` environments of your API.
-          schema:
-            type: string
-          example: sk_test.jI92Cbu0.XeHWdYM1VTLy4oLtGMw8wrmpt5q9d04n
-          required: true
-        - in: path
-          name: dimensionId
-          description: The identifier for the dimension.
-          schema:
-            type: string
-          example: dim_c5f32b8cd8934356b5167a3b2c6c6314
-          required: true
-      requestBody:
-        description: Information about the dimension to update.
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                name:
-                  type: string
-                  description: A human-readable name for the dimension which will be visible in dashboards and on invoices. Dimension names should be singular, not plural (ie "User," not "Users").
-                  example: User
-      responses:
-        "200":
-          description: "dimension successfully updated"
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Dimension"
-        "400":
-          description: "invalid input, object invalid"
-        "401":
-          description: "unauthorized"
-
-  /dimensions/{dimensionId}/delete:
-    post:
-      tags:
-        - dimensions
-      summary: delete a dimension
-      operationId: deleteDimension
-      description: |
-        Delete a dimension.
-
-        You cannot delete a dimension if it is in use by a plan.
-      parameters:
-        - in: header
-          name: Kable-Client-Id
-          description: Your client ID, found in the dashboard of your Kable account.
-          schema:
-            type: string
-          example: kci_3c90e9ac92c64f31ae8ed84d21e18740
-          required: true
-        - in: header
-          name: Kable-Client-Secret
-          description: Your `LIVE` or `TEST` secret key. Customers exist across all environments, so it does not matter which environment you use to create customers. Each customer will have separate keys for `LIVE` and `TEST` environments of your API.
-          schema:
-            type: string
-          example: sk_test.jI92Cbu0.XeHWdYM1VTLy4oLtGMw8wrmpt5q9d04n
-          required: true
-        - in: path
-          name: dimensionId
-          description: The identifier for the dimension.
-          schema:
-            type: string
-          example: dim_c5f32b8cd8934356b5167a3b2c6c6314
-          required: true
-      responses:
-        "200":
-          description: "dimension successfully deleted"
-        "400":
-          description: "invalid input, object invalid"
-        "401":
-          description: "unauthorized"
-
-  /plans:
-    get:
-      tags:
-        - plans
-      summary: get all plans
-      operationId: getAllPlans
-      description: |
-        Retrieve all plans.
-      parameters:
-        - in: header
-          name: Kable-Client-Id
-          description: Your client ID, found in the dashboard of your Kable account.
-          schema:
-            type: string
-          example: kci_3c90e9ac92c64f31ae8ed84d21e18740
-          required: true
-        - in: header
-          name: Kable-Client-Secret
-          description: Your `LIVE` or `TEST` secret key. Customers exist across all environments, so it does not matter which environment you use to fetch customers.
-          schema:
-            type: string
-          example: sk_test.jI92Cbu0.XeHWdYM1VTLy4oLtGMw8wrmpt5q9d04n
-          required: true
-      responses:
-        "200":
-          description: "information about your plans"
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/Plan"
-        "401":
-          description: "unauthorized"
-
-  /plans/{planId}:
-    get:
-      tags:
-        - plans
-      summary: get plan
-      operationId: getPlan
-      description: |
-        Retrieve a plan.
-      parameters:
-        - in: header
-          name: Kable-Client-Id
-          description: Your client ID, found in the dashboard of your Kable account.
-          schema:
-            type: string
-          example: kci_3c90e9ac92c64f31ae8ed84d21e18740
-          required: true
-        - in: header
-          name: Kable-Client-Secret
-          description: Your `LIVE` or `TEST` secret key. Customers exist across all environments, so it does not matter which environment you use to fetch customers.
-          schema:
-            type: string
-          example: sk_test.jI92Cbu0.XeHWdYM1VTLy4oLtGMw8wrmpt5q9d04n
-          required: true
-        - in: path
-          name: planId
-          description: The identifier for the plan. You can pass in *either* the `planId` (as defined by Kable) or the `externalId` (as defined by you).
-          schema:
-            type: string
-          example: pln_a23e148584d0463482c961b7f62f824c
-          required: true
-      responses:
-        "200":
-          description: "information about your plan"
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Plan"
-        "401":
-          description: "unauthorized"
-        "404":
-          description: "not found"
-
-  /plans/create:
-    post:
-      tags:
-        - plans
-      summary: create a plan
-      operationId: createPlan
-      description: |
-        Create a plan.
-      parameters:
-        - in: header
-          name: Kable-Client-Id
-          description: Your client ID, found in the dashboard of your Kable account.
-          schema:
-            type: string
-          example: kci_3c90e9ac92c64f31ae8ed84d21e18740
-          required: true
-        - in: header
-          name: Kable-Client-Secret
-          description: Your `LIVE` or `TEST` secret key. Customers exist across all environments, so it does not matter which environment you use to create customers. Each customer will have separate keys for `LIVE` and `TEST` environments of your API.
-          schema:
-            type: string
-          example: sk_test.jI92Cbu0.XeHWdYM1VTLy4oLtGMw8wrmpt5q9d04n
-          required: true
-      requestBody:
-        description: Information about the plan to create.
-        content:
-          application/json:
-            schema:
-              type: object
-              required:
-                - name
-                - type
-                - interval
-                - price
-              properties:
-                name:
-                  type: string
-                  example: "Requests Usage Plan"
-                  description: "A human-readable name for the plan, visible on dashboards, invoices, and reports."
-                externalId:
-                  type: string
-                  example: "yourcompany_plan123"
-                  description: "An identifier for the plan as defined by your API."
-                description:
-                  type: string
-                  example: "A usage plan based on the number of API requests"
-                  description: "A human-readable description for the plan, visible on dashboards, invoices, and reports."
-                nickname:
-                  type: string
-                  example: "requests_usage_v1"
-                  description: An additional identifier for the plan, defined by you, that is *not* visible to customers. If you have different *Monthly Active Users Plan*s for different cohorts of customers, this is a useful place to differentiate those.
-                type:
-                  type: string
-                  example: "USAGE"
-                  enum:
-                    - USAGE
-                    - SUBSCRIPTION
-                  description: "The type of plan."
-                interval:
-                  type: string
-                  example: "MONTH"
-                  enum:
-                    - MONTH
-                  description: "The billing interval for the plan."
-                dimensionId:
-                  type: string
-                  example: "dim_c5f32b8cd8934356b5167a3b2c6c6314"
-                  description: "An identifier of the dimension along which usage is aggregated in this plan."
-                aggregation:
-                  type: string
-                  example: "COUNT"
-                  description: "The aggregation along which usage metrics are calculated in this plan, relevant only for usage plans."
-                price:
-                  $ref: "#/components/schemas/Price"
-                  description: "The monthly price of the plan."
-                metadata:
-                  type: object
-                  example: { "foo": "bar" }
-                  description: "Arbitrary key-value pairs to attach to the object that can be useful for controlling functionality inside your API."
-      responses:
-        "200":
-          description: "plan successfully created"
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Plan"
-        "400":
-          description: "invalid input, object invalid"
-        "401":
-          description: "unauthorized"
-
-  /plans/{planId}/update:
-    post:
-      tags:
-        - plans
-      summary: update a plan
-      operationId: updatePlan
-      description: |
-        Update a plan.
-      parameters:
-        - in: header
-          name: Kable-Client-Id
-          description: Your client ID, found in the dashboard of your Kable account.
-          schema:
-            type: string
-          example: kci_3c90e9ac92c64f31ae8ed84d21e18740
-          required: true
-        - in: header
-          name: Kable-Client-Secret
-          description: Your `LIVE` or `TEST` secret key. Customers exist across all environments, so it does not matter which environment you use to create customers. Each customer will have separate keys for `LIVE` and `TEST` environments of your API.
-          schema:
-            type: string
-          example: sk_test.jI92Cbu0.XeHWdYM1VTLy4oLtGMw8wrmpt5q9d04n
-          required: true
-        - in: path
-          name: planId
-          description: The identifier for the plan. You can pass in *either* the `planId` (as defined by Kable) or the `externalId` (as defined by you).
-          schema:
-            type: string
-          example: pln_a23e148584d0463482c961b7f62f824c
-          required: true
-      requestBody:
-        description: Information about the plan to update.
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                name:
-                  type: string
-                  example: "Requests Usage Plan"
-                  description: "A human-readable name for the plan, visible on dashboards, invoices, and reports."
-                externalId:
-                  type: string
-                  example: "yourcompany_plan123"
-                  description: "An identifier for the plan as defined by your API."
-                description:
-                  type: string
-                  example: "A usage plan based on the number of API requests"
-                  description: "A human-readable description for the plan, visible on dashboards, invoices, and reports."
-                nickname:
-                  type: string
-                  example: "requests_usage_v1"
-                  description: An additional identifier for the plan, defined by you, that is *not* visible to customers. If you have different *Monthly Active Users Plan*s for different cohorts of customers, this is a useful place to differentiate those.
-                type:
-                  type: string
-                  example: "USAGE"
-                  enum:
-                    - USAGE
-                    - SUBSCRIPTION
-                  description: "The type of plan."
-                interval:
-                  type: string
-                  example: "MONTH"
-                  enum:
-                    - MONTH
-                  description: "The billing interval for the plan."
-                dimensionId:
-                  type: string
-                  example: "dim_c5f32b8cd8934356b5167a3b2c6c6314"
-                  description: "An identifier of the dimension along which usage is aggregated in this plan."
-                aggregation:
-                  type: string
-                  example: "COUNT"
-                  description: "The aggregation along which usage metrics are calculated in this plan, relevant only for usage plans."
-                price:
-                  $ref: "#/components/schemas/Price"
-                  description: "The monthly price of the plan."
-                metadata:
-                  type: object
-                  example: { "foo": "bar" }
-                  description: "Arbitrary key-value pairs to attach to the object that can be useful for controlling functionality inside your API."
-      responses:
-        "200":
-          description: "plan successfully updated"
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Plan"
-        "400":
-          description: "invalid input, object invalid"
-        "401":
-          description: "unauthorized"
-
-  /plans/{planId}/delete:
-    post:
-      tags:
-        - plans
-      summary: delete a plan
-      operationId: deletePlan
-      description: |
-        Delete a plan.
-
-        You cannot delete a plan to which a customer is actively subscribed.
-      parameters:
-        - in: header
-          name: Kable-Client-Id
-          description: Your client ID, found in the dashboard of your Kable account.
-          schema:
-            type: string
-          example: kci_3c90e9ac92c64f31ae8ed84d21e18740
-          required: true
-        - in: header
-          name: Kable-Client-Secret
-          description: Your `LIVE` or `TEST` secret key. Customers exist across all environments, so it does not matter which environment you use to create customers. Each customer will have separate keys for `LIVE` and `TEST` environments of your API.
-          schema:
-            type: string
-          example: sk_test.jI92Cbu0.XeHWdYM1VTLy4oLtGMw8wrmpt5q9d04n
-          required: true
-        - in: path
-          name: planId
-          description: The identifier for the plan. You can pass in *either* the `planId` (as defined by Kable) or the `externalId` (as defined by you).
-          schema:
-            type: string
-          example: pln_a23e148584d0463482c961b7f62f824c
-          required: true
-      responses:
-        "200":
-          description: "plan successfully deleted"
-        "400":
-          description: "invalid input, object invalid"
-        "401":
-          description: "unauthorized"
-  /bundles:
-    get:
-      tags:
-        - bundles
+      operationId: getBundles
       summary: get all bundles
-      operationId: getAllBundles
-      description: |
-        Retrieve all bundles.
+      description: Retrieve all bundles.
       parameters:
-        - in: header
+        - &ref_0
           name: Kable-Client-Id
-          description: Your client ID, found in the dashboard of your Kable account.
+          in: header
+          description: Your Kable client ID, found in the dashboard of your Kable account.
+          required: true
           schema:
             type: string
-          example: kci_3c90e9ac92c64f31ae8ed84d21e18740
-          required: true
-        - in: header
+        - &ref_1
           name: Kable-Client-Secret
+          in: header
           description: Your `LIVE` or `TEST` secret key.
+          required: true
           schema:
             type: string
-          example: sk_test.jI92Cbu0.XeHWdYM1VTLy4oLtGMw8wrmpt5q9d04n
-          required: true
       responses:
-        "200":
-          description: "information about your bundles"
+        '200':
+          description: Information about all bundles
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: "#/components/schemas/Bundle"
-        "401":
-          description: "unauthorized"
-
-  /bundles/{bundleId}:
+                  $ref: '#/components/schemas/BundleResponseDto'
+        '401': &ref_2
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage401'
+        '500': &ref_3
+          description: Something went wrong
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage500'
+      tags: &ref_4
+        - bundles
+  /api/v1/bundles/{bundleId}:
     get:
-      tags:
-        - bundles
-      summary: get bundle
       operationId: getBundle
-      description: |
-        Retrieve a bundle.
+      summary: get bundle
+      description: Retrieve a bundle.
       parameters:
-        - in: header
-          name: Kable-Client-Id
-          description: Your client ID, found in the dashboard of your Kable account.
-          schema:
-            type: string
-          example: kci_3c90e9ac92c64f31ae8ed84d21e18740
+        - *ref_0
+        - *ref_1
+        - name: bundleId
           required: true
-        - in: header
-          name: Kable-Client-Secret
-          description: Your `LIVE` or `TEST` secret key.
-          schema:
-            type: string
-          example: sk_test.jI92Cbu0.XeHWdYM1VTLy4oLtGMw8wrmpt5q9d04n
-          required: true
-        - in: path
-          name: bundleId
-          description: The identifier for the bundle. You can pass in *either* the `bundleId` (as defined by Kable) or the `externalId` (as defined by you).
-          schema:
-            type: string
+          in: path
+          description: The bundle ID
           example: bun_a23e148584d0463482c961b7f62f824c
-          required: true
+          schema:
+            type: string
       responses:
-        "200":
-          description: "information about your bundle"
+        '200':
+          description: Information about your bundle
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Bundle"
-        "401":
-          description: "unauthorized"
-        "404":
-          description: "not found"
-
-  /bundles/create:
+                $ref: '#/components/schemas/BundleResponseDto'
+        '401': *ref_2
+        '500': *ref_3
+      tags: *ref_4
+  /api/v1/bundles/create:
     post:
-      tags:
-        - bundles
-      summary: create a bundle
       operationId: createBundle
-      description: |
-        Create a bundle.
+      summary: create bundle
+      description: Create a bundle.
       parameters:
-        - in: header
-          name: Kable-Client-Id
-          description: Your client ID, found in the dashboard of your Kable account.
-          schema:
-            type: string
-          example: kci_3c90e9ac92c64f31ae8ed84d21e18740
-          required: true
-        - in: header
-          name: Kable-Client-Secret
-          description: Your `LIVE` or `TEST` secret key.
-          schema:
-            type: string
-          example: sk_test.jI92Cbu0.XeHWdYM1VTLy4oLtGMw8wrmpt5q9d04n
-          required: true
+        - *ref_0
+        - *ref_1
       requestBody:
-        description: Information about the bundle to create.
+        required: true
         content:
           application/json:
             schema:
-              type: object
-              required:
-                - name
-              properties:
-                name:
-                  type: string
-                  example: "Professional Package"
-                  description: "A human-readable name for the bundle, visible on dashboards, invoices, and reports."
-                externalId:
-                  type: string
-                  example: "yourcompany_bundle123"
-                  description: "An identifier for the bundle as defined by your API."
-                description:
-                  type: string
-                  example: "The perfect package for businesses starting to scale."
-                  description: "A human-readable description for the bundle, visible on dashboards, invoices, and reports."
-                nickname:
-                  type: string
-                  example: "professional_2022_v2"
-                  description: An additional identifier for the bundle, defined by you, that is *not* visible to customers. If you have multiple *Starter Tier*s for different customers, this is a helpful way to differentiate.
-                planIds:
-                  type: array
-                  items:
-                    type: string
-                  description: "A collection of plans to include in the bundle."
-                  example: ["pln_a23e148584d0463482c961b7f62f824c"]
-                costPerCredit:
-                  type: number
-                  example: 0.25
-                  description: Overage costs per credit for bundle subscribers (only relevant if bundle plans are priced in credits).
-                currency:
-                  type: string
-                  enum:
-                    - "USD"
-                    - "CAD"
-                    - "MXN"
-                    - "EUR"
-                    - "GBP"
-                    - "JPY"
-                    - "INR"
-                    - "CNY"
-                    - "AUD"
-                    - "NZD"
-                  example: "USD"
-                  description: "The three-letter currency code with which this customer pays for plans."
-                metadata:
-                  type: object
-                  example: { "foo": "bar" }
-                  description: "Arbitrary key-value pairs to attach to the object that can be useful for controlling functionality inside your API."
+              $ref: '#/components/schemas/CreateBundleRequestDto'
       responses:
-        "200":
-          description: "bundle successfully created"
+        '200':
+          description: Bundle successfully created
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Bundle"
-        "400":
-          description: "invalid input, object invalid"
-        "401":
-          description: "unauthorized"
-
-  /bundles/{bundleId}/update:
+                type: array
+                items:
+                  $ref: '#/components/schemas/BundleResponseDto'
+        '401': *ref_2
+        '500': *ref_3
+      tags: *ref_4
+  /api/v1/bundles/{bundleId}/update:
     post:
-      tags:
-        - bundles
-      summary: update a bundle
       operationId: updateBundle
-      description: |
-        Update a bundle.
+      summary: update bundle
+      description: Update a bundle.
       parameters:
-        - in: header
-          name: Kable-Client-Id
-          description: Your client ID, found in the dashboard of your Kable account.
-          schema:
-            type: string
-          example: kci_3c90e9ac92c64f31ae8ed84d21e18740
+        - *ref_0
+        - *ref_1
+        - name: bundleId
           required: true
-        - in: header
-          name: Kable-Client-Secret
-          description: Your `LIVE` or `TEST` secret key.
-          schema:
-            type: string
-          example: sk_test.jI92Cbu0.XeHWdYM1VTLy4oLtGMw8wrmpt5q9d04n
-          required: true
-        - in: path
-          name: bundleId
-          description: The identifier for the bundle. You can pass in *either* the `bundleId` (as defined by Kable) or the `externalId` (as defined by you).
-          schema:
-            type: string
+          in: path
+          description: The bundle ID
           example: bun_a23e148584d0463482c961b7f62f824c
-          required: true
+          schema:
+            type: string
       requestBody:
-        description: Information about the bundle to update.
+        required: true
         content:
           application/json:
             schema:
-              type: object
-              properties:
-                name:
-                  type: string
-                  example: "Professional Package"
-                  description: "A human-readable name for the bundle, visible on dashboards, invoices, and reports."
-                externalId:
-                  type: string
-                  example: "yourcompany_bundle123"
-                  description: "An identifier for the bundle as defined by your API."
-                description:
-                  type: string
-                  example: "The perfect package for businesses starting to scale."
-                  description: "A human-readable description for the bundle, visible on dashboards, invoices, and reports."
-                nickname:
-                  type: string
-                  example: "professional_2022_v2"
-                  description: An additional identifier for the bundle, defined by you, that is *not* visible to customers. If you have multiple *Starter Tier*s for different customers, this is a helpful way to differentiate.
-                planIds:
-                  type: array
-                  items:
-                    type: string
-                  description: "A collection of plans to include in the bundle."
-                  example: ["pln_a23e148584d0463482c961b7f62f824c"]
-                costPerCredit:
-                  type: number
-                  example: 0.25
-                  description: Overage costs per credit for bundle subscribers (only relevant if bundle plans are priced in credits).
-                currency:
-                  type: string
-                  enum:
-                    - "USD"
-                    - "CAD"
-                    - "MXN"
-                    - "EUR"
-                    - "GBP"
-                    - "JPY"
-                    - "INR"
-                    - "CNY"
-                    - "AUD"
-                    - "NZD"
-                  example: "USD"
-                  description: "The three-letter currency code with which this customer pays for plans."
-                metadata:
-                  type: object
-                  example: { "foo": "bar" }
-                  description: "Arbitrary key-value pairs to attach to the object that can be useful for controlling functionality inside your API."
+              $ref: '#/components/schemas/UpdateBundleRequestDto'
       responses:
-        "200":
-          description: "bundle successfully updated"
+        '201':
+          description: Bundle successfully updated
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Bundle"
-        "400":
-          description: "invalid input, object invalid"
-        "401":
-          description: "unauthorized"
-
-  /bundles/{bundleId}/delete:
+                $ref: '#/components/schemas/BundleResponseDto'
+        '401': *ref_2
+        '500': *ref_3
+      tags: *ref_4
+  /api/v1/bundles/{bundleId}/delete:
     post:
-      tags:
-        - bundles
-      summary: delete a bundle
       operationId: deleteBundle
-      description: |
+      summary: delete bundle
+      description: |-
         Delete a bundle.
 
         You cannot delete a bundle to which a customer is actively subscribed.
       parameters:
-        - in: header
-          name: Kable-Client-Id
-          description: Your client ID, found in the dashboard of your Kable account.
+        - *ref_0
+        - *ref_1
+        - name: bundleId
+          required: true
+          in: path
+          description: The bundle ID
+          example: bun_a23e148584d0463482c961b7f62f824c
           schema:
             type: string
-          example: kci_3c90e9ac92c64f31ae8ed84d21e18740
+      responses:
+        '201':
+          description: Bundle successfully deleted
+        '401': *ref_2
+        '500': *ref_3
+      tags: *ref_4
+  /api/v1/customers:
+    get:
+      operationId: getCustomers
+      summary: get all customers
+      description: Retrieve all customers.
+      parameters:
+        - &ref_5
+          name: Kable-Client-Id
+          in: header
+          description: Your Kable client ID, found in the dashboard of your Kable account.
           required: true
-        - in: header
+          schema:
+            type: string
+        - &ref_6
           name: Kable-Client-Secret
+          in: header
           description: Your `LIVE` or `TEST` secret key.
+          required: true
           schema:
             type: string
-          example: sk_test.jI92Cbu0.XeHWdYM1VTLy4oLtGMw8wrmpt5q9d04n
-          required: true
-        - in: path
-          name: bundleId
-          description: The identifier for the bundle. You can pass in *either* the `bundleId` (as defined by Kable) or the `externalId` (as defined by you).
-          schema:
-            type: string
-          example: pln_a23e148584d0463482c961b7f62f824c
-          required: true
       responses:
-        "200":
-          description: "bundle successfully deleted"
-        "400":
-          description: "invalid input, object invalid"
-        "401":
-          description: "unauthorized"
-
-  /events/create:
-    post:
-      tags:
-        - events
-      summary: record events
-      operationId: createEvents
-      description: |
-        Record information about something that happened in your API.
-
-        Kable uses events to perform metering and usage-based billing calculations.
-      parameters:
-        - in: header
-          name: Kable-Client-Id
-          description: Your client ID, found in the dashboard of your Kable account.
-          schema:
-            type: string
-          example: kci_3c90e9ac92c64f31ae8ed84d21e18740
-          required: true
-        - in: header
-          name: Kable-Client-Secret
-          description: Your `LIVE` or `TEST` secret key, depending on the environment in which the key is being created.
-          schema:
-            type: string
-          example: sk_test.jI92Cbu0.XeHWdYM1VTLy4oLtGMw8wrmpt5q9d04n
-          required: true
-      requestBody:
-        description: Events containing information about things that happened in your API
-        content:
-          application/json:
-            schema:
-              type: array
-              items:
-                $ref: "#/components/schemas/Event"
-      responses:
-        "200":
-          description: "events successfully recorded"
-        "400":
-          description: "invalid input, object invalid"
-        "401":
-          description: "unauthorized"
-
-  # # DEPRECATED #
-  # /metrics/get:
-  #   post:
-  #     tags:
-  #       - metrics
-  #     summary: get metric
-  #     operationId: getMetric
-  #     description: Retrieve a usage metric for a given dimension from Kable.
-  #     parameters:
-  #       - in: header
-  #         name: Kable-Client-Id
-  #         description: Your client ID, found in the dashboard of your Kable account.
-  #         schema:
-  #           type: string
-  #         example: kci_3c90e9ac92c64f31ae8ed84d21e18740
-  #         required: true
-  #       - in: header
-  #         name: Kable-Client-Secret
-  #         description: Your `LIVE` or `TEST` secret key, depending on the environment in which the key is being created.
-  #         schema:
-  #           type: string
-  #         example: sk_test.jI92Cbu0.XeHWdYM1VTLy4oLtGMw8wrmpt5q9d04n
-  #         required: true
-  #     requestBody:
-  #       description: Parameters of the metrics query you'd like to run.
-  #       content:
-  #         application/json:
-  #           schema:
-  #             type: object
-  #             required:
-  #               - aggregation
-  #               - startDate
-  #               - endDate
-  #             properties:
-  #               dimensionId:
-  #                 type: string
-  #                 example: "dim_c5f32b8cd8934356b5167a3b2c6c6314"
-  #                 description: Note that either `dimensionId` or `dimensionKey` is required.
-  #               dimensionKey:
-  #                 type: string
-  #                 example: "userId"
-  #                 description: Note that either `dimensionId` or `dimensionKey` is required.
-  #               aggregation:
-  #                 type: string
-  #                 example: "COUNT_DISTINCT"
-  #                 description: Valid values are `COUNT`, `COUNT_DISTINCT`, and `SUM`.
-  #               startDate:
-  #                 type: string
-  #                 format: date-time
-  #                 description: "Start of the period over which to query. Timestamps must be formatted as RFC 3339 strings like `2022-01-09T09:32:01Z`"
-  #               endDate:
-  #                 type: string
-  #                 format: date-time
-  #                 description: "End of the period over which to query. Timestamps must be formatted as RFC 3339 strings like `2022-01-09T09:32:01Z`"
-  #               clientId:
-  #                 type: string
-  #                 example: 'yourcompanyuser_1234567890'
-  #                 description: When provided, query will consider only this customer. When `null`, query will consider all of your customers.
-  #     responses:
-  #       '200':
-  #         description: queried usage metric
-  #         content:
-  #           application/json:
-  #             schema:
-  #               type: object
-  #               required:
-  #                 - dimensionId
-  #                 - total
-  #               properties:
-  #                 dimensionId:
-  #                   type: string
-  #                   example: 'dim_c5f32b8cd8934356b5167a3b2c6c6314'
-  #                   description: The dimension that was queried
-  #                 total:
-  #                   type: number
-  #                   example: 45284
-  #                   description: The total usage for the requested query
-  #       '400':
-  #         description: 'invalid input, object invalid'
-  #       '401':
-  #         description: 'unauthorized'
-
-  /usage/get:
-    post:
-      tags:
-        - usage
-      summary: get usage metrics
-      operationId: getUsage
-      description: Retrieve a usage metric for a given dimension from Kable.
-      parameters:
-        - in: header
-          name: Kable-Client-Id
-          description: Your client ID, found in the dashboard of your Kable account.
-          schema:
-            type: string
-          example: kci_3c90e9ac92c64f31ae8ed84d21e18740
-          required: true
-        - in: header
-          name: Kable-Client-Secret
-          description: Your `LIVE` or `TEST` secret key, depending on the environment in which the key is being created.
-          schema:
-            type: string
-          example: sk_test.jI92Cbu0.XeHWdYM1VTLy4oLtGMw8wrmpt5q9d04n
-          required: true
-      requestBody:
-        description: Parameters of the usage metrics query to execute.
-        content:
-          application/json:
-            schema:
-              type: object
-              required:
-                - aggregation
-                - startDate
-                - endDate
-                - interval
-              properties:
-                aggregation:
-                  type: string
-                  example: "COUNT_DISTINCT"
-                  description: Valid values are `COUNT`, `COUNT_DISTINCT`, and `SUM`.
-                dimensionId:
-                  type: string
-                  example: "dim_c5f32b8cd8934356b5167a3b2c6c6314"
-                  description: Note that one of either `dimensionId` or `dimensionKey` is required, though either may be provided.
-                dimensionKey:
-                  type: string
-                  example: "userId"
-                  description: Note that one of either `dimensionId` or `dimensionKey` is required, though either may be provided.
-                startDate:
-                  type: string
-                  format: date-time
-                  example: "2022-03-01T00:00:00Z"
-                  description: "Start of the period over which to query. Timestamps must be formatted as RFC 3339 strings like `2022-01-09T09:32:01Z`"
-                endDate:
-                  type: string
-                  format: date-time
-                  example: "2022-04-01T00:00:00Z"
-                  description: "End of the period over which to query. Timestamps must be formatted as RFC 3339 strings like `2022-01-09T09:32:01Z`"
-                interval:
-                  type: string
-                  enum:
-                    - HOUR
-                    - DAY
-                    - MONTH
-                  example: "DAY"
-                  description: Timeseries unit duration over which to return intervals.
-                clientId:
-                  type: string
-                  example: "yourcompanyuser_1234567890"
-                  description: When provided, query will consider only this customer. When `null`, query will consider all of your customers.
-      responses:
-        "200":
-          description: usage metrics
+        '200':
+          description: Information about all customers
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/UsageMetricResponse"
-        "400":
-          description: "invalid input, object invalid"
-        "401":
-          description: "unauthorized"
-
-  /tokens/create:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CustomerResponseDto'
+        '401': &ref_7
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage401'
+        '500': &ref_8
+          description: Something went wrong
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage500'
+      tags: &ref_9
+        - customers
+  /api/v1/customers/{customerId}:
+    get:
+      operationId: getCustomer
+      summary: get customer
+      description: Retrieve a customer.
+      parameters:
+        - *ref_5
+        - *ref_6
+        - name: customerId
+          required: true
+          in: path
+          description: The customer ID
+          example: cus_8276e1ac8ed84d21c64f31ae0082fe
+          schema:
+            type: string
+      responses:
+        '200':
+          description: information about your customer
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomerResponseDto'
+        '401': *ref_7
+        '500': *ref_8
+      tags: *ref_9
+  /api/v1/customers/create:
     post:
+      operationId: createCustomer
+      summary: create customer
+      description: >-
+        Create a new customer. Call this when a new customer signs up for your
+        API.
+
+
+        You can this API in the `LIVE` or `TEST` environment and the outcome
+        will be the same. Customers exist across environments. Handling of
+        subsequent customer requests in a given environment are governed by the
+        environment-specific keys (`LIVE` or `TEST`) they use to authenticate.
+
+
+        Note that clients can also be created manually from within the Customers
+        tab of your Kable dashboard.
+      parameters:
+        - *ref_5
+        - *ref_6
+        - name: stripe
+          required: false
+          in: query
+          description: >-
+            When true, Kable will also create and attach a Stripe customer.
+
+
+            If your account is not connected to Stripe, the request will fail.
+            If you provide a `stripeCustomerId` in the request body, this query
+            parameter will be ignored.
+          example: true
+          schema:
+            type: boolean
+        - name: keys
+          required: false
+          in: query
+          description: >-
+            When true, Kable will create API keys for this customer. (This is
+            only necessary if you use Kable for authentication.)
+          example: true
+          schema:
+            type: boolean
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateCustomerRequestDto'
+      responses:
+        '201':
+          description: New customer successfully created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomerResponseWithKeysDto'
+        '401': *ref_7
+        '500': *ref_8
+      tags: *ref_9
+  /api/v1/customers/{customerId}/update:
+    post:
+      operationId: updateCustomer
+      summary: update customer
+      description: >-
+        Update a customer. Call this to programmatically update information
+        about an existing customer.
+
+
+        Note that clients can also be updated manually from within the Customers
+        tab of your Kable dashboard.
+      parameters:
+        - *ref_5
+        - *ref_6
+        - name: customerId
+          required: true
+          in: path
+          description: The customer ID
+          example: cus_8276e1ac8ed84d21c64f31ae0082fe
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateCustomerRequestDto'
+      responses:
+        '201':
+          description: Customer successfully updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomerResponseDto'
+        '401': *ref_7
+        '500': *ref_8
+      tags: *ref_9
+  /api/v1/customers/{customerId}/cancel:
+    post:
+      operationId: cancelCustomer
+      summary: cancel a customer
+      description: >-
+        Cancelling a customer will update its status to `CANCELLED` and
+        terminate all future billing.
+      parameters:
+        - *ref_5
+        - *ref_6
+        - name: customerId
+          required: true
+          in: path
+          description: The customer ID
+          example: cus_8276e1ac8ed84d21c64f31ae0082fe
+          schema:
+            type: string
+      responses:
+        '201':
+          description: Customer successfully cancelled
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomerResponseDto'
+        '401': *ref_7
+        '500': *ref_8
+      tags: *ref_9
+  /api/v1/customers/{customerId}/delete:
+    post:
+      operationId: deleteCustomer
+      summary: delete customer
+      description: >-
+        Deleting a customer will erase all record of the customer identity in
+        Kable. This action is irreversible, and should only be used for the
+        purposes of GDPR / CCPA.
+      parameters:
+        - *ref_5
+        - *ref_6
+        - name: customerId
+          required: true
+          in: path
+          description: The customer ID
+          example: cus_8276e1ac8ed84d21c64f31ae0082fe
+          schema:
+            type: string
+      responses:
+        '201':
+          description: Customer successfully deleted
+        '401': *ref_7
+        '500': *ref_8
+      tags: *ref_9
+  /api/v1/customers/{customerId}/plans/add:
+    post:
+      operationId: createCustomerPlan
+      summary: add customer plan(s)
+      description: >-
+        Add a plan(s) to a customer.
+
+
+        Note that customer plans can also be added and removed manually from
+        within the Customers tab of your Kable dashboard.
+      parameters:
+        - *ref_5
+        - *ref_6
+        - name: customerId
+          required: true
+          in: path
+          description: The customer ID
+          example: cus_8276e1ac8ed84d21c64f31ae0082fe
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateCustomerPlansRequestDto'
+      responses:
+        '201':
+          description: Customer plan successfully added
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomerResponseDto'
+        '401': *ref_7
+        '500': *ref_8
+      tags: *ref_9
+  /api/v1/customers/{customerId}/plans/remove:
+    post:
+      operationId: removeCustomerPlan
+      summary: remove customer plan(s)
+      description: >-
+        Remove a plan(s) from a customer.
+
+
+        Note that customer plans can also be added and removed manually from
+        within the Customers tab of your Kable dashboard.
+      parameters:
+        - *ref_5
+        - *ref_6
+        - name: customerId
+          required: true
+          in: path
+          description: The customer ID
+          example: cus_8276e1ac8ed84d21c64f31ae0082fe
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RemoveCustomerPlansRequestDto'
+      responses:
+        '201':
+          description: Customer plan successfully removed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomerResponseDto'
+        '401': *ref_7
+        '500': *ref_8
+      tags: *ref_9
+  /api/v1/customers/{customerId}/bundles/add:
+    post:
+      operationId: createCustomerBundle
+      summary: add customer bundle
+      description: >-
+        Add a bundle to a customer.
+
+
+        Note that customer bundles can also be added and removed manually from
+        within the Customers tab of your Kable dashboard.
+      parameters:
+        - *ref_5
+        - *ref_6
+        - name: customerId
+          required: true
+          in: path
+          description: The customer ID
+          example: cus_8276e1ac8ed84d21c64f31ae0082fe
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateCustomerBundleRequestDto'
+      responses:
+        '201':
+          description: Customer bundle successfully added
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomerResponseDto'
+        '401': *ref_7
+        '500': *ref_8
+      tags: *ref_9
+  /api/v1/customers/{customerId}/bundles/remove:
+    post:
+      operationId: removeCustomerBundle
+      summary: remove customer bundle
+      description: >-
+        Remove a bundle to a customer.
+
+
+        Note that customer bundles can also be added and removed manually from
+        within the Customers tab of your Kable dashboard.
+      parameters:
+        - *ref_5
+        - *ref_6
+        - name: customerId
+          required: true
+          in: path
+          description: The customer ID
+          example: cus_8276e1ac8ed84d21c64f31ae0082fe
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RemoveCustomerBundleRequestDto'
+      responses:
+        '201':
+          description: Customer bundle successfully removed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomerResponseDto'
+        '401': *ref_7
+        '500': *ref_8
+      tags: *ref_9
+  /api/v1/customers/{customerId}/payment_methods/add:
+    post:
+      operationId: createCustomerPaymentMethod
+      summary: add customer payment method
+      description: >-
+        Collect a payment method / credit card for a customer.
+
+
+        Calling this method creates a short-lived [Stripe Checkout
+        Session](https://stripe.com/payments/checkout) to allow your customers
+        to enter payment method details. This API will return a Stripe URL to
+        which you should redirect your customers to securely add their credit
+        card information. Upon completion, Stripe will redirect back to the
+        provided URLs.
+      parameters:
+        - *ref_5
+        - *ref_6
+        - name: customerId
+          required: true
+          in: path
+          description: The customer ID
+          example: cus_8276e1ac8ed84d21c64f31ae0082fe
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AddCustomerPaymentMethodRequestDto'
+      responses:
+        '201':
+          description: >-
+            Stripe Checkout Session successfully created to collect customer
+            payment method
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AddCustomerPaymentMethodResponseDto'
+        '401': *ref_7
+        '500': *ref_8
+      tags: *ref_9
+  /api/v1/customers/{customerId}/credits/balance:
+    get:
+      operationId: getCustomerCreditBalance
+      summary: get customer credit balance
+      description: Get a customer's available credit balance.
+      parameters:
+        - *ref_5
+        - *ref_6
+        - name: customerId
+          required: true
+          in: path
+          description: The customer ID
+          example: cus_8276e1ac8ed84d21c64f31ae0082fe
+          schema:
+            type: string
+      responses:
+        '201':
+          description: Customer credit grant balance
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreditBalanceResponseDto'
+        '401': *ref_7
+        '500': *ref_8
+      tags: *ref_9
+  /api/v1/customers/{customerId}/credits/create:
+    post:
+      operationId: createCustomerCreditGrant
+      summary: create customer credit grant
+      description: Add a credit grant to a customer.
+      parameters:
+        - *ref_5
+        - *ref_6
+        - name: customerId
+          required: true
+          in: path
+          description: The customer ID
+          example: cus_8276e1ac8ed84d21c64f31ae0082fe
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateCreditGrantRequestDto'
+      responses:
+        '201':
+          description: Credit grant successfully created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreditBalanceResponseDto'
+        '401': *ref_7
+        '500': *ref_8
+      tags: *ref_9
+  /api/v1/dimensions:
+    get:
+      operationId: getDimensions
+      summary: get all dimensions
+      description: Retrieve all dimensions.
+      parameters:
+        - &ref_10
+          name: Kable-Client-Id
+          in: header
+          description: Your Kable client ID, found in the dashboard of your Kable account.
+          required: true
+          schema:
+            type: string
+        - &ref_11
+          name: Kable-Client-Secret
+          in: header
+          description: Your `LIVE` or `TEST` secret key.
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Information about your dimensions
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/DimensionResponseDto'
+        '401': &ref_12
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage401'
+        '500': &ref_13
+          description: Something went wrong
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage500'
+      tags: &ref_14
+        - dimensions
+  /api/v1/dimensions/{dimensionId}:
+    get:
+      operationId: getDimension
+      summary: get dimension
+      description: Retrieve a dimension.
+      parameters:
+        - *ref_10
+        - *ref_11
+        - name: dimensionId
+          required: true
+          in: path
+          description: The dimension ID
+          example: dim_c5f32b8cd8934356b5167a3b2c6c6314
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Information about your dimension
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DimensionResponseDto'
+        '401': *ref_12
+        '500': *ref_13
+      tags: *ref_14
+  /api/v1/dimensions/create:
+    post:
+      operationId: createDimension
+      summary: create dimension
+      description: Create a dimension.
+      parameters:
+        - *ref_10
+        - *ref_11
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateDimensionRequestDto'
+      responses:
+        '201':
+          description: Dimension successfully created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DimensionResponseDto'
+        '401': *ref_12
+        '500': *ref_13
+      tags: *ref_14
+  /api/v1/dimensions/{dimensionId}/update:
+    post:
+      operationId: updateDimension
+      summary: update dimension
+      description: Update a dimension.
+      parameters:
+        - *ref_10
+        - *ref_11
+        - name: dimensionId
+          required: true
+          in: path
+          description: The dimension ID
+          example: dim_c5f32b8cd8934356b5167a3b2c6c6314
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateDimensionRequestDto'
+      responses:
+        '201':
+          description: Dimension successfully updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DimensionResponseDto'
+        '401': *ref_12
+        '500': *ref_13
+      tags: *ref_14
+  /api/v1/dimensions/{dimensionId}/delete:
+    post:
+      operationId: deleteDimension
+      summary: delete dimension
+      description: |-
+        Delete a dimension.
+
+         You cannot delete a dimension if it is in use by a plan.
+      parameters:
+        - *ref_10
+        - *ref_11
+        - name: dimensionId
+          required: true
+          in: path
+          description: The dimension ID
+          example: dim_c5f32b8cd8934356b5167a3b2c6c6314
+          schema:
+            type: string
+      responses:
+        '201':
+          description: Dimension successfully deleted
+        '401': *ref_12
+        '500': *ref_13
+      tags: *ref_14
+  /api/v1/plans:
+    get:
+      operationId: getPlans
+      summary: get all plans
+      description: Retrieve all plans.
+      parameters:
+        - &ref_15
+          name: Kable-Client-Id
+          in: header
+          description: Your Kable client ID, found in the dashboard of your Kable account.
+          required: true
+          schema:
+            type: string
+        - &ref_16
+          name: Kable-Client-Secret
+          in: header
+          description: Your `LIVE` or `TEST` secret key.
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Information about all plans
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PlanResponseDto'
+        '401': &ref_17
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage401'
+        '500': &ref_18
+          description: Something went wrong
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage500'
+      tags: &ref_19
+        - plans
+  /api/v1/plans/{planId}:
+    get:
+      operationId: getPlan
+      summary: get plan
+      description: Retrieve a plan.
+      parameters:
+        - *ref_15
+        - *ref_16
+        - name: planId
+          required: true
+          in: path
+          description: The plan ID
+          example: pln_a23e148584d0463482c961b7f62f824c
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Information about your plan
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PlanResponseDto'
+        '401': *ref_17
+        '500': *ref_18
+      tags: *ref_19
+  /api/v1/plans/create:
+    post:
+      operationId: createPlan
+      summary: create plan
+      description: Create a plan.
+      parameters:
+        - *ref_15
+        - *ref_16
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreatePlanRequestDto'
+      responses:
+        '201':
+          description: Plan successfully created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PlanResponseDto'
+        '401': *ref_17
+        '500': *ref_18
+      tags: *ref_19
+  /api/v1/plans/{planId}/update:
+    post:
+      operationId: updatePlan
+      summary: update plan
+      description: Update a plan.
+      parameters:
+        - *ref_15
+        - *ref_16
+        - name: planId
+          required: true
+          in: path
+          description: The plan ID
+          example: pln_a23e148584d0463482c961b7f62f824c
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdatePlanRequestDto'
+      responses:
+        '201':
+          description: Plan successfully updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PlanResponseDto'
+        '401': *ref_17
+        '500': *ref_18
+      tags: *ref_19
+  /api/v1/plans/{planId}/delete:
+    post:
+      operationId: deletePlan
+      summary: delete plan
+      description: |-
+        Delete a plan.
+
+        You cannot delete a plan to which a customer is actively subscribed.
+      parameters:
+        - *ref_15
+        - *ref_16
+        - name: planId
+          required: true
+          in: path
+          description: The plan ID
+          example: pln_a23e148584d0463482c961b7f62f824c
+          schema:
+            type: string
+      responses:
+        '201':
+          description: Plan successfully deleted
+        '401': *ref_17
+        '500': *ref_18
+      tags: *ref_19
+  /api/v1/invoices:
+    get:
+      operationId: getInvoices
+      summary: get all invoices
+      description: Retrieve all invoices.
+      parameters:
+        - &ref_20
+          name: Kable-Client-Id
+          in: header
+          description: Your Kable client ID, found in the dashboard of your Kable account.
+          required: true
+          schema:
+            type: string
+        - &ref_21
+          name: Kable-Client-Secret
+          in: header
+          description: Your `LIVE` or `TEST` secret key.
+          required: true
+          schema:
+            type: string
+        - name: customerId
+          required: true
+          in: query
+          schema:
+            type: string
+        - name: clientId
+          required: true
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Information about all invoices
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/InvoiceResponseDto'
+        '401': &ref_22
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage401'
+        '500': &ref_23
+          description: Something went wrong
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage500'
+      tags: &ref_24
+        - invoices
+  /api/v1/invoices/{invoiceId}:
+    get:
+      operationId: getInvoice
+      summary: get invoice
+      description: Retrieve an invoice
+      parameters:
+        - *ref_20
+        - *ref_21
+        - name: invoiceId
+          required: true
+          in: path
+          description: The invoice ID
+          example: inv_346daaa242674b179ecc44f43b5b9db4
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Information about an invoice
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InvoiceResponseDto'
+        '401': *ref_22
+        '500': *ref_23
+      tags: *ref_24
+  /api/v1/invoices/{invoiceId}/download:
+    get:
+      operationId: downloadInvoice
+      summary: download invoice
+      description: Download an invoice
+      parameters:
+        - *ref_20
+        - *ref_21
+        - name: invoiceId
+          required: true
+          in: path
+          description: The invoice ID
+          example: inv_346daaa242674b179ecc44f43b5b9db4
+          schema:
+            type: string
+        - name: format
+          required: true
+          in: query
+          description: The downloaded file format
+          example: pdf
+          schema:
+            enum:
+              - pdf
+              - csv
+            type: string
+      responses:
+        '200':
+          description: Invoice successfully downloaded
+        '401': *ref_22
+        '500': *ref_23
+      tags: *ref_24
+  /api/v1/tokens/create:
+    post:
+      operationId: createInvoice
+      summary: create token
+      description: >-
+        Generate a new access token for embedding Kable dashboards within your
+        developer portal.
+      parameters:
+        - name: Kable-Client-Id
+          in: header
+          description: Your Kable client ID, found in the dashboard of your Kable account.
+          required: true
+          schema:
+            type: string
+        - name: Kable-Client-Secret
+          in: header
+          description: Your `LIVE` or `TEST` secret key.
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateTokenDto'
+      responses:
+        '200':
+          description: Token successfully created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DashboardTokenResponseDto'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage401'
+        '500':
+          description: Something went wrong
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage500'
       tags:
         - tokens
-      summary: create a token
-      operationId: createToken
-      description: |
-        Generate a new access token for embedding Kable dashboards within your developer portal.
+  /api/v1/usage/get:
+    post:
+      operationId: getUsage
+      summary: get usage metric
+      description: Retrieve a usage metric for a given dimension from Kable.
       parameters:
-        - in: header
-          name: Kable-Client-Id
-          description: Your client ID, found in the dashboard of your Kable account.
+        - name: Kable-Client-Id
+          in: header
+          description: Your Kable client ID, found in the dashboard of your Kable account.
+          required: true
           schema:
             type: string
-          example: kci_3c90e9ac92c64f31ae8ed84d21e18740
+        - name: Kable-Client-Secret
+          in: header
+          description: Your `LIVE` or `TEST` secret key.
           required: true
-        - in: header
-          name: Kable-Client-Secret
-          description: Your `LIVE` or `TEST` secret key, depending on the environment in which the key is being created.
           schema:
             type: string
-          example: sk_test.jI92Cbu0.XeHWdYM1VTLy4oLtGMw8wrmpt5q9d04n
-          required: true
       requestBody:
-        description: The customer `clientId` for which to grant data access permissions to the token
+        required: true
         content:
           application/json:
             schema:
-              type: object
-              required:
-                - clientId
-              properties:
-                clientId:
-                  type: string
-                  example: "yourcompanyuser_1234567890"
+              $ref: '#/components/schemas/UsageMetricRequestDto'
       responses:
-        "200":
-          description: "new key successfully created"
+        '201':
+          description: Usage metrics
           content:
             application/json:
               schema:
-                type: object
-                required:
-                  - token
-                properties:
-                  token:
-                    type: string
-                    example: "30e8c05f9add4ebeaab3ab2f42bdde31"
-        "400":
-          description: "invalid input, object invalid"
-        "401":
-          description: "unauthorized"
-  /authenticate:
-    post:
+                $ref: '#/components/schemas/UsageMetricResponseDto'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage401'
+        '500':
+          description: Something went wrong
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage500'
       tags:
-        - authenticate
-      summary: authenticate an API request
-      operationId: authenticate
-      description: |
-        Authenticate a customer API request.
-
-        Learn more about Kable as an Authentication Provider in the documentation.
+        - usage
+  /api/v1/authenticate:
+    post:
+      operationId: doAuthentication
+      summary: authenticate API request
+      description: >-
+        Learn more about Kable as an Authentication Provider in the
+        [documentation](https://docs.kable.io/docs/kable-as-an-authentication-provider).
       parameters:
-        - in: header
-          name: Kable-Client-Id
-          description: Your client ID, found in the dashboard of your Kable account.
+        - name: Kable-Client-Id
+          in: header
+          description: Your Kable client ID, found in the dashboard of your Kable account.
+          required: true
           schema:
             type: string
-          example: kci_3c90e9ac92c64f31ae8ed84d21e18740
-          required: true
-        - in: header
-          name: X-Api-Key
-          description: An API key to authenticate for the provided X-Client-Id.
-          schema:
-            type: string
-          example: sk_test.Tkcyh5Nd.pXVoFFkA8zJm02CA82ODyKRK1E7ZPeAv
-          required: true
-        - in: header
-          name: X-Client-Id
+        - name: X-Client-Id
+          in: header
           description: The client ID of the customer to authenticate.
+          required: true
           schema:
             type: string
-          example: yourcompanyuser_1234567890
-          required: false
+        - name: X-Api-Key
+          in: header
+          description: An API key to authenticate for the provided X-Client-Id.
+          required: true
+          schema:
+            type: string
       responses:
-        "200":
-          description: "Authentication successful"
-        "401":
-          description: "unauthorized"
+        '200':
+          description: Success
+        '401':
+          description: Unauthorized
+      tags:
+        - authentication
+  /api/v1/events/create:
+    post:
+      operationId: createEvent
+      summary: record events
+      description: >-
+        Record information about something that happened in your API.
 
-externalDocs:
-  description: Find out more about the Kable API
-  url: "https://kable.stoplight.io/docs/kable"
 
+        Kable uses events to perform metering and usage-based billing
+        calculations.
+      parameters:
+        - name: Kable-Client-Id
+          in: header
+          description: Your Kable client ID, found in the dashboard of your Kable account.
+          required: true
+          schema:
+            type: string
+        - name: Kable-Client-Secret
+          in: header
+          description: Your `LIVE` or `TEST` secret key.
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Events successfully recorded
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage401'
+        '500':
+          description: Something went wrong
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage500'
+      tags:
+        - events
+info:
+  title: Kable API
+  description: >+
+    The Kable API allows developers to manage customers, plans, and usage data
+    for their API.
+
+
+    ## API Host and Environments
+
+
+    Kable is accessible in Live and Test environments for authentication and
+    metering of client API requests. You will have separate API keys to access
+    each environment.
+
+
+    You should only use Kable's Live environment for your own production data.
+    All other configured environments should use Kable's Test environment.
+
+
+    ## API Protocols and Headers
+
+
+    All requests to the Kable API are made over HTTPS TLS v1.2+ to ensure
+    security. Calls made over HTTP will fail. Any requests without proper
+    authentication will also fail.
+
+
+    The Kable API uses standard JSON for requests and responses. Be sure to set
+    both the `Content-Type` and `Accept` headers on each request to
+    `application/json`.
+
+
+    Each Kable API response includes a `requestId` as the `X-REQUEST-ID`
+    response header. The `requestId` is included on most responses regardless
+    whether the API request succeeded or failed. You can use this `requestId` to
+    help with debugging or when contacting support regarding a specific API
+    call.
+
+
+    ## API Versioning
+
+
+    All Kable endpoints are versioned. After the host, each API can be found at
+    `/api/vX/...` where X is the API version.
+
+
+    We strive to ensure that changes to the Kable API are backward compatible.
+    Sometimes, though, we must break from older design paradigms to make the
+    product better. When this happens, a new version of the API is released.
+
+
+    The current version of the Kable API is `v1`.
+
+  version: 1.0.0
+  contact:
+    name: Kable
+    url: https://kable.io
+    email: contact@kable.io
+tags: []
+servers:
+  - url: https://live.kable.io
+    description: Kable Live
+  - url: https://test.kable.io
+    description: Kable Test
 components:
   schemas:
-    Event:
+    ErrorMessage401:
       type: object
-      required:
-        - clientId
-        - timestamp
       properties:
+        message:
+          type: string
+          description: Human-readable error message
+          example: Unauthorized
+      required:
+        - message
+    ErrorMessage500:
+      type: object
+      properties:
+        message:
+          type: string
+          description: Human-readable error message
+          example: Something went wrong
+      required:
+        - message
+    PlanPriceResponseDto:
+      type: object
+      properties:
+        currency:
+          type: string
+        tiers:
+          type: array
+          items:
+            type: string
+      required:
+        - currency
+        - tiers
+    PlanResponseDto:
+      type: object
+      properties:
+        planId:
+          type: string
+          description: A Kable-defined identifier for the plan.
+          example: pln_a23e148584d0463482c961b7f62f824c
+        name:
+          type: string
+          description: >-
+            A human-readable name for the plan, visible on dashboards, invoices,
+            and reports.
+          example: Requests Usage Plan
+        externalId:
+          type: string
+          description: An identifier for the plan as defined by your API.
+          example: yourcompany_plan123
+        description:
+          type: string
+          description: >-
+            A human-readable description for the plan, visible on dashboards,
+            invoices, and reports.
+          example: A usage plan based on the number of API requests
+        nickname:
+          type: string
+          description: >-
+            An additional identifier for the plan, defined by you, that is *not*
+            visible to customers. If you have different *Monthly Active Users
+            Plan*s for different cohorts of customers, this is a useful place to
+            differentiate those.
+          example: requests_usage_v1
+        type:
+          type: string
+          description: The type of plan.
+          enum:
+            - USAGE
+            - SUBCRIPTION
+          example: USAGE
+        dimensionId:
+          type: string
+          description: >-
+            An identifier of the dimension along which usage is aggregated in
+            this plan, relevant only for usage plans.
+          example: dim_c5f32b8cd8934356b5167a3b2c6c6314
+        aggregation:
+          type: string
+          description: >-
+            The aggregation along which usage metrics are calculated in this
+            plan, relevant only for usage plans.
+          example: COUNT
+        interval:
+          type: string
+          description: The billing interval for the plan.
+          example: MONTH
+          enum:
+            - MONTH
+        metadata:
+          type: object
+          description: >-
+            Arbitrary key-value pairs to attach to the object that can be useful
+            for controlling functionality inside your API.
+          example:
+            foo: bar
+        price:
+          description: The monthly price of the plan.
+          allOf:
+            - $ref: '#/components/schemas/PlanPriceResponseDto'
+        created:
+          format: date-time
+          type: string
+          description: Date at which entity was first created
+          example: '2022-03-01T00:00:00.000Z'
+        modified:
+          format: date-time
+          type: string
+          description: Date at which entity was last modified
+          example: '2022-03-01T00:00:00.000Z'
+      required:
+        - planId
+        - name
+        - type
+        - dimensionId
+        - interval
+        - price
+        - created
+        - modified
+    BundleResponseDto:
+      type: object
+      properties:
+        bundleId:
+          type: string
+          description: A Kable-defined identifier for the bundle.
+          example: bun_a23e148584d0463482c961b7f62f824c
+        name:
+          type: string
+          description: >-
+            A human-readable name for the bundle, visible on dashboards,
+            invoices, and reports.
+          example: Professional Package
+        externalId:
+          type: string
+          description: An identifier for the bundle as defined by your API.
+          example: yourcompany_bun123
+        description:
+          type: string
+          description: >-
+            A human-readable description for the bundle, visible on dashboards,
+            invoices, and reports.
+          example: The perfect package for scaling businesses
+        nickname:
+          type: string
+          description: >-
+            An additional identifier for the bundle, defined by you, that is
+            *not* visible to customers. If you have different *Monthly Active
+            Users Bundle*s for different cohorts of customers, this is a useful
+            place to differentiate those.
+          example: professional_2022
+        currency:
+          type: string
+          description: Three-letter ISO currency code
+          example: USD
+          enum:
+            - USD
+            - CAD
+            - MXN
+            - EUR
+            - GBP
+            - JPY
+            - INR
+            - CNY
+            - AUD
+            - NZD
+        plans:
+          description: The plans included in this bundle.
+          type: array
+          items:
+            $ref: '#/components/schemas/PlanResponseDto'
+        metadata:
+          type: object
+          description: >-
+            Arbitrary key-value pairs to attach to the object that can be useful
+            for controlling functionality inside your API.
+          example:
+            foo: bar
+        created:
+          format: date-time
+          type: string
+          description: Date at which entity was first created
+          example: '2022-03-01T00:00:00.000Z'
+        modified:
+          format: date-time
+          type: string
+          description: Date at which entity was last modified
+          example: '2022-03-01T00:00:00.000Z'
+      required:
+        - bundleId
+        - name
+        - currency
+        - created
+        - modified
+    CreateBundleRequestDto:
+      type: object
+      properties:
+        bundleId:
+          type: string
+        name:
+          type: string
+        externalId:
+          type: string
+        description:
+          type: string
+        nickname:
+          type: string
+        planIds:
+          type: array
+          items:
+            type: string
+        currency:
+          type: string
+        costPerCredit:
+          type: number
+        metadata:
+          type: object
+      required:
+        - bundleId
+        - name
+    UpdateBundleRequestDto:
+      type: object
+      properties:
+        bundleId:
+          type: string
+        name:
+          type: string
+        externalId:
+          type: string
+        description:
+          type: string
+        nickname:
+          type: string
+        planIds:
+          type: array
+          items:
+            type: string
+        currency:
+          type: string
+        costPerCredit:
+          type: number
+        metadata:
+          type: object
+    CustomerResponseDto:
+      type: object
+      properties:
+        kableClientId:
+          type: string
+          description: Your Kable client ID, found in the dashboard of your Kable account
+          example: kci_3c90e9ac92c64f31ae8ed84d21e18740
+        customerId:
+          type: string
+          description: A Kable-defined identifier for the customer.
+          example: yourcompanyuser_1234567890
         clientId:
           type: string
-          description: "Your customer's client ID (as defined by you during customer creation). This is how Kable attributes events to a given customer."
-        timestamp:
+          description: A unique identifier for the customer, defined by you.
+          example: yourcompanyuser_1234567890
+        companyName:
           type: string
+          description: The name of the customer.
+          example: Awesome Corp
+        currency:
+          type: string
+          description: Three-letter ISO currency code
+          example: USD
+          enum: &ref_25
+            - USD
+            - CAD
+            - MXN
+            - EUR
+            - GBP
+            - JPY
+            - INR
+            - CNY
+            - AUD
+            - NZD
+        status:
+          type: string
+          description: The status of the customer.
+          example: ACTIVE
+          enum: &ref_26
+            - ACTIVE
+            - CANCELLED
+        nextInvoiceDate:
           format: date-time
-          description: "When the event occurred. Timestamps must be formatted as RFC 3339 strings like `2022-01-09T09:32:01Z`."
-        transactionId:
           type: string
-          description: A unique identifier for the event, used as an idempotency key for event deduplication.
-        data:
-          type: object
-          example:
-            {
-              "userId": "xyz123",
-              "messageId": "msg_824ae20a",
-              "countOfSomethingInteresting": 10,
-              "totalCost": 399.99,
-            }
-          description: |
-            `data` is a JSON-formatted object containing key-value pairs of information to be tracked by Kable. The keys provided in the `data` JSON correspond to the Dimensions you've defined on Kable.
-
-            When using a Kable library, you must **always** include a `clientId` in the `record` payload so that Kable can accurately attribute events to your customers.
-
-    Customer:
-      type: object
+          description: The date at which the customer's next invoice will occur.
+          example: '2022-05-12T00:00:00.000Z'
+        plans:
+          description: The customer's plans.
+          type: array
+          items:
+            type: string
+        bundles:
+          description: The customer's bundles.
+          type: array
+          items:
+            type: string
+        created:
+          format: date-time
+          type: string
+          description: Date at which entity was first created
+          example: '2022-03-01T00:00:00.000Z'
+        modified:
+          format: date-time
+          type: string
+          description: Date at which entity was last modified
+          example: '2022-03-01T00:00:00.000Z'
       required:
+        - kableClientId
         - customerId
         - clientId
         - companyName
         - currency
         - status
+        - plans
+        - bundles
+        - created
+        - modified
+    CreateCustomerRequestDto:
+      type: object
+      properties:
+        clientId:
+          type: string
+          description: >-
+            A unique identifier for the customer, defined by you. This usually
+            corresponds to your own internal unique identifier for customers,
+            and is the identifier by which Kable attributes customer usage.
+          example: yourcompanyuser_1234567890
+        companyName:
+          type: string
+          description: >-
+            The name of the customer, visible on dashboards, invoices, and
+            reports.
+          example: Awesome Corp
+        currency:
+          type: string
+          description: Three-letter ISO currency code
+          example: USD
+          enum:
+            - USD
+            - CAD
+            - MXN
+            - EUR
+            - GBP
+            - JPY
+            - INR
+            - CNY
+            - AUD
+            - NZD
+        stripeCustomerId:
+          type: string
+          description: >-
+            The customer's Stripe `customer_id`, if one already exists, for
+            automatic invoice processing through Stripe.
+        planIds:
+          description: A collection of plans to which to subscribe the customer.
+          example:
+            - pln_a23e148584d0463482c961b7f62f824c
+          type: array
+          items:
+            type: string
+        bundleIds:
+          description: A collection of bundles to which to subscribe the customer.
+          example:
+            - bun_a23e148584d0463482c961b7f62f824c
+          type: array
+          items:
+            type: string
+      required:
+        - clientId
+        - companyName
+        - currency
+    KeyResponseDto:
+      type: object
+      properties:
+        clientId:
+          type: string
+          description: A unique identifier for the customer, defined by you.
+          example: yourcompanyuser_1234567890
+        key:
+          type: string
+          description: The API key value
+          example: sk_test_.a924be71...
+        revokedAt:
+          format: date-time
+          type: string
+          description: The time at which the key was revoked
+          example: '2022-05-10T00:00:00.000Z'
+        created:
+          format: date-time
+          type: string
+          description: Date at which entity was first created
+          example: '2022-03-01T00:00:00.000Z'
+      required:
+        - clientId
+        - key
+        - created
+    CustomerResponseWithKeysDto:
+      type: object
       properties:
         kableClientId:
           type: string
-          example: "kci_3c90e9ac92c64f31ae8ed84d21e18740"
-          description: "Your company's Kable client ID."
+          description: Your Kable client ID, found in the dashboard of your Kable account
+          example: kci_3c90e9ac92c64f31ae8ed84d21e18740
         customerId:
           type: string
-          example: "cus_8276e1ac8ed84d21c64f31ae0082fe"
-          description: "A Kable-defined identifier for the customer."
+          description: A Kable-defined identifier for the customer.
+          example: yourcompanyuser_1234567890
         clientId:
           type: string
-          example: "yourcompanyuser_1234567890"
-          description: "A unique identifier for the customer, defined by you. This usually corresponds to your own internal unique identifier for customers, and is the identifier by which Kable attributes customer usage."
+          description: A unique identifier for the customer, defined by you.
+          example: yourcompanyuser_1234567890
         companyName:
           type: string
-          example: "Awesome Corp"
-          description: "The name of the customer, visible on dashboards, invoices, and reports."
+          description: The name of the customer.
+          example: Awesome Corp
         currency:
           type: string
-          enum:
-            - "USD"
-            - "CAD"
-            - "MXN"
-            - "EUR"
-            - "GBP"
-            - "JPY"
-            - "INR"
-            - "CNY"
-            - "AUD"
-            - "NZD"
-          example: "USD"
-          description: "The three-letter currency code with which this customer pays for plans."
+          description: Three-letter ISO currency code
+          example: USD
+          enum: *ref_25
         status:
           type: string
-          enum:
-            - ACTIVE
-            - CANCELLED
-          example: "ACTIVE"
-          description: "The current status of the customer."
+          description: The status of the customer.
+          example: ACTIVE
+          enum: *ref_26
         nextInvoiceDate:
+          format: date-time
           type: string
-          example: "2022-02-09T00:00:00.000Z"
-          description: "The date of the customer's next invoice, if any."
+          description: The date at which the customer's next invoice will occur.
+          example: '2022-05-12T00:00:00.000Z'
+        plans:
+          description: The customer's plans.
+          type: array
+          items:
+            type: string
+        bundles:
+          description: The customer's bundles.
+          type: array
+          items:
+            type: string
+        created:
+          format: date-time
+          type: string
+          description: Date at which entity was first created
+          example: '2022-03-01T00:00:00.000Z'
+        modified:
+          format: date-time
+          type: string
+          description: Date at which entity was last modified
+          example: '2022-03-01T00:00:00.000Z'
+        keys:
+          description: >-
+            The customer's API keys (relevant only if you use Kable as an
+            authentication provider)
+          type: array
+          items:
+            $ref: '#/components/schemas/KeyResponseDto'
+      required:
+        - kableClientId
+        - customerId
+        - clientId
+        - companyName
+        - currency
+        - status
+        - plans
+        - bundles
+        - created
+        - modified
+    UpdateCustomerRequestDto:
+      type: object
+      properties:
+        companyName:
+          type: string
+          description: >-
+            The name of the customer, visible on dashboards, invoices, and
+            reports.
+          example: Awesome Corp
+        currency:
+          type: string
+          description: The currency with which this customer pays for plans.
+          example: USD
         stripeCustomerId:
           type: string
-          example: "cus_a91565WBFwU30c"
-          description: "The customer's Stripe `customer_id`, if any, for automatic invoice processing through Stripe."
-        plans:
-          type: array
-          items:
-            $ref: "#/components/schemas/CustomerPlan"
-          description: "A collection of plans to which this customer is currently subscribed."
-        bundles:
-          type: array
-          items:
-            $ref: "#/components/schemas/Bundle"
-          description: "A collection of bundles to which this customer is currently subscribed."
-
-    Dimension:
+          description: >-
+            The customer's Stripe `customer_id`, if any, for automatic invoice
+            processing through Stripe.
+          example: cus_a91565WBFwU30c
+    CreateCustomerPlansRequestDto:
       type: object
-      required:
-        - dimensionId
-        - key
-        - name
       properties:
-        dimensionId:
-          type: string
-          example: "dim_c5f32b8cd8934356b5167a3b2c6c6314"
-          description: "A Kable-defined identifier for the dimension."
-        key:
-          type: string
-          example: "userId"
-          description: "An identifier for the dimension defined by you. This key corresponds to the key in the JSON payload of a usage event, and can be passed into the `record` library method."
-        name:
-          type: string
-          example: "User"
-          description: "A human-readable name for the dimension, visible on dashboards, invoices, and reports."
-
-    Plan:
+        planIds:
+          description: A collection of plans to which to subscribe the customer.
+          example:
+            - pln_a23e148584d0463482c961b7f62f824c
+          type: array
+          items:
+            type: string
+    RemoveCustomerPlansRequestDto:
       type: object
-      required:
-        - planId
-        - name
-        - type
-        - interval
-        - price
       properties:
         planId:
           type: string
-          example: "pln_a23e148584d0463482c961b7f62f824c"
-          description: "A Kable-defined identifier for the plan."
-        name:
-          type: string
-          example: "Requests Usage Plan"
-          description: "A human-readable name for the plan, visible on dashboards, invoices, and reports."
-        externalId:
-          type: string
-          example: "yourcompany_plan123"
-          description: "An identifier for the plan as defined by your API."
-        description:
-          type: string
-          example: "A usage plan based on the number of API requests"
-          description: "A human-readable description for the plan, visible on dashboards, invoices, and reports."
-        nickname:
-          type: string
-          example: "requests_usage_v1"
-          description: An additional identifier for the plan, defined by you, that is *not* visible to customers. If you have different *Monthly Active Users Plan*s for different cohorts of customers, this is a useful place to differentiate those.
-        type:
-          type: string
-          example: "USAGE"
-          enum:
-            - USAGE
-            - SUBSCRIPTION
-          description: "The type of plan."
-        interval:
-          type: string
-          example: "MONTH"
-          enum:
-            - MONTH
-          description: "The billing interval for the plan."
-        dimensionId:
-          type: string
-          example: "dim_c5f32b8cd8934356b5167a3b2c6c6314"
-          description: "An identifier of the dimension along which usage is aggregated in this plan, relevant only for usage plans."
-        aggregation:
-          type: string
-          example: "COUNT"
-          description: "The aggregation along which usage metrics are calculated in this plan, relevant only for usage plans."
-        price:
-          $ref: "#/components/schemas/Price"
-          description: "The monthly price of the plan."
-        metadata:
-          type: object
-          example: { "foo": "bar" }
-          description: "Arbitrary key-value pairs to attach to the object that can be useful for controlling functionality inside your API."
-        # nextPlanId:
-        #   type: string
-        #   example: "pln_c1a443dedf8d459c975ed29b2c0d745e"
-        #   description: An optional identifier of any "next" plan after the termination of a free trials or pilot programs.
-
-    Price:
-      type: object
-      required:
-        - currency
-        - tiers
-      properties:
-        currency:
-          type: string
-          enum:
-            - "USD"
-            - "CAD"
-            - "MXN"
-            - "EUR"
-            - "GBP"
-            - "JPY"
-            - "INR"
-            - "CNY"
-            - "AUD"
-            - "NZD"
-          example: "USD"
-          description: "Three-letter currency code."
-        tiers:
-          type: array
-          description: "Price tiers that define price for usage-based plans. Subscription plans will always have prices with a single tier."
-          items:
-            $ref: "#/components/schemas/PriceTier"
-
-    PriceTier:
-      type: object
-      required:
-        - type
-        - amount
-      properties:
-        type:
-          type: string
-          enum:
-            - "UNIT"
-            - "PACKAGE"
-            - "FLAT"
-            - "MINIMUM"
-            - "MAXIMUM"
-            - "PERCENTAGE"
-            - "SUBSCRIPTION"
-          example: "USD"
-          description: "Price type for the tier."
-        amount:
-          type: number
-          description: "Cost for the tier, evaluated in the context of its associated type."
-          example: 999.99
-        start:
-          type: number
-          description: "The usage metric at which this tier pricing starts."
-          example: 0
-        finish:
-          type: number
-          description: "The usage metric at which this tier pricing ends. A value of -1 represents infinity."
-          example: -1
-        packageSize:
-          type: number
-          description: "The package size, applicable only for package pricing (ie $1 for every 10 requests)."
-          example: 10
-
-    CustomerPlan:
-      type: object
-      required:
-        - planId
-        - dimensionId
-        - name
-        - addedDate
-      properties:
-        planId:
-          type: string
-          example: "pln_a23e148584d0463482c961b7f62f824c"
-          description: "A Kable-defined identifier for the plan."
-        name:
-          type: string
-          example: "Requests Usage Plan"
-          description: "A human-readable name for the plan, visible on dashboards, invoices, and reports."
-        externalId:
-          type: string
-          example: "yourcompany_plan123"
-          description: "An identifier for the plan as defined by your API."
-        description:
-          type: string
-          example: "A usage plan based on the number of API requests"
-          description: "A human-readable description for the plan, visible on dashboards, invoices, and reports."
-        nickname:
-          type: string
-          example: "requests_usage_v1"
-          description: An additional identifier for the plan, defined by you, that is *not* visible to customers. If you have different *Monthly Active Users Plan*s for different cohorts of customers, this is a useful place to differentiate those.
-        dimensionId:
-          type: string
-          example: "dim_c5f32b8cd8934356b5167a3b2c6c6314"
-          description: "An identifier of the dimension along which usage is aggregated in this plan."
-        addedDate:
-          type: string
-          description: Date the plan was added to the customer.
-          example: "2022-01-09T00:00:00.000Z"
-        endedDate:
-          type: string
-          description: Date the plan ended or will end for trials or pilot programs.
-          example: "2022-02-09T00:00:00.000Z"
-        periodStartDate:
-          type: string
-          description: Date the current invoice cycle begins.
-          example: "2022-01-09T00:00:00.000Z"
-        periodEndDate:
-          type: string
-          description: Date the current invoice cycle ends.
-          example: "2022-02-09T00:00:00.000Z"
-        nextPlanId:
-          type: string
-          example: "pln_c1a443dedf8d459c975ed29b2c0d745e"
-          description: An optional identifier of any "next" plan after the termination of a free trials or pilot programs.
-
-    Key:
-      type: object
-      required:
-        - environment
-        - key
-      properties:
-        environment:
-          type: string
-          enum:
-            - LIVE
-            - TEST
-          example: "TEST"
-          description: The environment to which this key corresponds.
-        clientId:
-          type: string
-          example: "yourcompanyuser_1234567890"
-          description: "The identifier (defined by you) for the customer to which this key belongs."
-        key:
-          type: string
-          example: "sk_test.jI92Cbu0.XeHWdYM1VTLy4oLtGMw8wrmpt5q9d04n"
-          description: "The secret value of the key."
-
-    CreditGrant:
-      type: object
-      required:
-        - creditGrantId
-        - grantAmount
-        - balanceAmount
-        - currency
-      properties:
-        creditGrantId:
-          type: string
-          example: "crd_f55ad8df7b4b4890881595d3d8005c4f"
-          description: "The identifier of the credit grant created on Kable."
-        grantAmount:
-          type: number
-          example: 100
-          description: "The number of credits created in the grant."
-        balanceAmount:
-          type: number
-          example: 100
-          description: "The available, non-consumed balance remaining in the grant."
-        paidAmount:
-          type: number
-          example: 100
-          description: "The amount paid (in the specified `currency`), if any, for the credit grant."
-        currency:
-          type: string
-          enum:
-            - "USD"
-            - "CAD"
-            - "MXN"
-            - "EUR"
-            - "GBP"
-            - "JPY"
-            - "INR"
-            - "CNY"
-            - "AUD"
-            - "NZD"
-          example: "USD"
-          description: "Three-letter currency code."
-
-    UsageMetricResponse:
-      type: object
-      required:
-        - startDate
-        - endDate
-        - intervals
-      properties:
-        # aggregation:
-        #   type: string
-        #   example: "COUNT_DISTINCT"
-        #   description: Valid values are `COUNT`, `COUNT_DISTINCT`, and `SUM`.
-        startDate:
-          type: string
-          format: date-time
-          example: "2022-03-01T00:00:00Z"
-          description: "Start of the period over which to query. Timestamps must be formatted as RFC 3339 strings like `2022-01-09T09:32:01Z`"
-        endDate:
-          type: string
-          format: date-time
-          example: "2022-04-01T00:00:00Z"
-          description: "End of the period over which to query. Timestamps must be formatted as RFC 3339 strings like `2022-01-09T09:32:01Z`"
-        # interval:
-        #   type: string
-        #   example: "DAY"
-        #   description: Valid values are `HOUR`, `DAY`, and `MONTH`.
-        dimension:
-          $ref: "#/components/schemas/Dimension"
-
-        clientId:
-          type: string
-          example: "yourcompanyuser_1234567890"
-          description: When provided, query will consider only this customer. When `null`, query will consider all of your customers.
-        intervals:
+          description: The identifier for a single plan.
+          example: pln_a23e148584d0463482c961b7f62f824c
+        planIds:
+          description: The identifiers for many plans.
+          example:
+            - pln_a23e148584d0463482c961b7f62f824c
+            - pln_b177473b31d44c3b8a2a365618a3deca
           type: array
           items:
-            $ref: "#/components/schemas/UsageMetricInterval"
-
-    Bundle:
+            type: string
+    CreateCustomerBundleRequestDto:
       type: object
-      required:
-        - bundleId
-        - name
       properties:
         bundleId:
           type: string
-          example: "bun_a23e148584d0463482c961b7f62f824c"
-          description: "A Kable-defined identifier for the bundle."
-        name:
+          description: The identifier for the bundle.
+          example: bun_a23e148584d0463482c961b7f62f824c
+      required:
+        - bundleId
+    RemoveCustomerBundleRequestDto:
+      type: object
+      properties:
+        bundleId:
           type: string
-          example: "Professional Package"
-          description: "A human-readable name for the bundle, visible on dashboards, invoices, and reports."
-        externalId:
+          description: Bundle ID to remove.
+          example: bun_a23e148584d0463482c961b7f62f824c
+      required:
+        - bundleId
+    AddCustomerPaymentMethodRequestDto:
+      type: object
+      properties:
+        successUrl:
           type: string
-          example: "yourcompany_bun123"
-          description: "An identifier for the bundle as defined by your API."
+          description: >-
+            The url to which to redirect after successful payment method
+            creation
+          example: https://yourcompany.com/signup/complete?success=true
+        cancelUrl:
+          type: string
+          description: The url to which to redirect after failed payment method creation
+          example: https://yourcompany.com/signup/failure?success=false
+      required:
+        - successUrl
+        - cancelUrl
+    AddCustomerPaymentMethodResponseDto:
+      type: object
+      properties:
+        url:
+          type: string
+          description: >-
+            The Stripe checkout url to which to redirect customers to complete
+            payment method creation
+          example: https://checkout.stripe.com/pay/cs_test_c1PJzZEmw9vH1x978D...
+      required:
+        - url
+    CreditBalanceResponseDto:
+      type: object
+      properties:
+        available:
+          type: number
+          description: The customer's available credit grant balance
+          example: 75
+      required:
+        - available
+    CreateCreditGrantRequestDto:
+      type: object
+      properties:
+        grantAmount:
+          type: number
+          description: The number of credits to create in the grant.
+          example: 100
+        chargeAmount:
+          type: number
+          description: >-
+            An optional amount to charge the customer (in the customer's
+            configured `currency`) before issuing a credit grant.
+
+
+            When the `chargeAmount` field is supplied, Kable will attempt to
+            charge the customer immediately through Stripe before issuing the
+            grant. Therefore, when specifying a `chargeAmount`, the customer
+            must have a Stripe integration defined and have a default payment
+            card on-file.
+          example: 199.99
         description:
           type: string
-          example: "The perfect package for businesses starting to scale"
-          description: "A human-readable description for the bundle, visible on dashboards, invoices, and reports."
-        nickname:
+          description: >-
+            A human-readable description that explains why the credit grant is
+            being created.
+          example: A top-up grant to buy more API credits.
+      required:
+        - grantAmount
+    DimensionResponseDto:
+      type: object
+      properties:
+        dimensionId:
           type: string
-          example: "professional_2022_v2"
-          description: An additional identifier for the bundle, defined by you, that is *not* visible to customers. If you have different *Monthly Active Users Bundle*s for different cohorts of customers, this is a useful place to differentiate those.
-        plans:
-          type: array
-          items:
-            $ref: "#/components/schemas/Plan"
-          description: "A collection of plans in the bundle."
-        costPerCredit:
-          type: number
-          example: 0.25
-          description: Overage costs per credit for bundle subscribers (only relevant if bundle plans are priced in credits).
+          description: A Kable-defined identifier for the dimension.
+          example: dim_c5f32b8cd8934356b5167a3b2c6c6314
+        key:
+          type: string
+          description: >-
+            An identifier for the dimension defined by you. This key corresponds
+            to the key in the JSON payload of a usage event, and can be passed
+            into the `record` library method.
+          example: userId
+        name:
+          type: string
+          description: >-
+            A human-readable name for the dimension, visible on dashboards,
+            invoices, and reports.
+          example: User
+      required:
+        - dimensionId
+        - key
+        - name
+    CreateDimensionRequestDto:
+      type: object
+      properties:
+        key:
+          type: string
+          description: >-
+            The key by which Kable identifies the dimension in your usage
+            events.
+          example: userId
+        name:
+          type: string
+          description: >-
+            A human-readable name for the dimension which will be visible in
+            dashboards and on invoices. Dimension names should be singular, not
+            plural (ie "User," not "Users")
+          example: User
+      required:
+        - key
+        - name
+    UpdateDimensionRequestDto:
+      type: object
+      properties:
+        name:
+          type: string
+          description: >-
+            A human-readable name for the dimension which will be visible in
+            dashboards and on invoices. Dimension names should be singular, not
+            plural (ie "User," not "Users").
+          example: User
+      required:
+        - name
+    PlanPriceRequestDto:
+      type: object
+      properties:
         currency:
           type: string
+          description: Three-letter currency code.
           enum:
-          - "USD"
-          - "CAD"
-          - "MXN"
-          - "EUR"
-          - "GBP"
-          - "JPY"
-          - "INR"
-          - "CNY"
-          - "AUD"
-          - "NZD"
-          example: "USD"
-          description: "The three-letter currency code with which this customer pays for plans."
+            - USD
+            - CAD
+            - MXN
+            - EUR
+            - GBP
+            - JPY
+            - INR
+            - CNY
+            - AUD
+            - NZD
+          example: USD
+        tiers:
+          description: >-
+            Price tiers that define price for usage-based plans. Subscription
+            plans will always have prices with a single tier.
+          type: array
+          items:
+            type: string
+      required:
+        - currency
+        - tiers
+    CreatePlanRequestDto:
+      type: object
+      properties:
+        planId:
+          type: string
+        name:
+          type: string
+          description: >-
+            A human-readable name for the plan, visible on dashboards, invoices,
+            and reports.
+          example: Requests Usage Plan
+        externalId:
+          type: string
+          description: An identifier for the plan as defined by your API.
+          example: yourcompany_plan123
+        description:
+          type: string
+          description: >-
+            A human-readable description for the plan, visible on dashboards,
+            invoices, and reports.
+          example: A usage plan based on the number of API requests
+        nickname:
+          type: string
+          description: >-
+            An additional identifier for the plan, defined by you, that is *not*
+            visible to customers. If you have different *Monthly Active Users
+            Plan*s for different cohorts of customers, this is a useful place to
+            differentiate those.
+          example: requests_usage_v1
+        type:
+          type: string
+          description: The type of plan.
+          enum: &ref_27
+            - USAGE
+            - SUBSCRIPTION
+          example: USAGE
+        dimensionId:
+          type: string
+          description: >-
+            An identifier of the dimension along which usage is aggregated in
+            this plan.
+          example: dim_c5f32b8cd8934356b5167a3b2c6c6314
+        aggregation:
+          type: string
+          description: >-
+            The aggregation along which usage metrics are calculated in this
+            plan, relevant only for usage plans.
+          example: COUNT
+        interval:
+          type: string
+          description: The billing interval for the plan.
+          enum: &ref_28
+            - MONTH
+          example: MONTH
         metadata:
           type: object
-          example: { "foo": "bar" }
-          description: "Arbitrary key-value pairs to attach to the object that can be useful for controlling functionality inside your API."
-
-    UsageMetricInterval:
+          description: >-
+            Arbitrary key-value pairs to attach to the object that can be useful
+            for controlling functionality inside your API.
+          example: &ref_29
+            foo: bar
+        price:
+          description: The monthly price of the plan.
+          allOf:
+            - $ref: '#/components/schemas/PlanPriceRequestDto'
+      required:
+        - planId
+        - name
+        - type
+        - price
+    UpdatePlanRequestDto:
       type: object
+      properties:
+        planId:
+          type: string
+        name:
+          type: string
+          description: >-
+            A human-readable name for the plan, visible on dashboards, invoices,
+            and reports.
+          example: Requests Usage Plan
+        externalId:
+          type: string
+          description: An identifier for the plan as defined by your API.
+          example: yourcompany_plan123
+        description:
+          type: string
+          description: >-
+            A human-readable description for the plan, visible on dashboards,
+            invoices, and reports.
+          example: A usage plan based on the number of API requests
+        nickname:
+          type: string
+          description: >-
+            An additional identifier for the plan, defined by you, that is *not*
+            visible to customers. If you have different *Monthly Active Users
+            Plan*s for different cohorts of customers, this is a useful place to
+            differentiate those.
+          example: requests_usage_v1
+        type:
+          type: string
+          description: The type of plan.
+          enum: *ref_27
+          example: USAGE
+        dimensionId:
+          type: string
+          description: >-
+            An identifier of the dimension along which usage is aggregated in
+            this plan.
+          example: dim_c5f32b8cd8934356b5167a3b2c6c6314
+        aggregation:
+          type: string
+          description: >-
+            The aggregation along which usage metrics are calculated in this
+            plan, relevant only for usage plans.
+          example: COUNT
+        interval:
+          type: string
+          description: The billing interval for the plan.
+          enum: *ref_28
+          example: MONTH
+        metadata:
+          type: object
+          description: >-
+            Arbitrary key-value pairs to attach to the object that can be useful
+            for controlling functionality inside your API.
+          example: *ref_29
+        price:
+          description: The monthly price of the plan.
+          allOf:
+            - $ref: '#/components/schemas/PlanPriceRequestDto'
+    InvoiceCustomerResponseDto:
+      type: object
+      properties:
+        customerId:
+          type: string
+          description: A Kable-defined identifier for the customer.
+          example: yourcompanyuser_1234567890
+        clientId:
+          type: string
+          description: A unique identifier for the customer, defined by you.
+          example: yourcompanyuser_1234567890
+        companyName:
+          type: string
+          description: The name of the customer.
+          example: Awesome Corp
+      required:
+        - customerId
+        - clientId
+        - companyName
+    InvoicePriceResponseDto:
+      type: object
+      properties:
+        currency:
+          type: string
+          description: Three-letter ISO currency code
+          example: USD
+          enum:
+            - USD
+            - CAD
+            - MXN
+            - EUR
+            - GBP
+            - JPY
+            - INR
+            - CNY
+            - AUD
+            - NZD
+        amount:
+          type: number
+          description: The total price amount.
+          example: 499.99
+      required:
+        - currency
+        - amount
+    InvoiceUsageResponseDto:
+      type: object
+      properties:
+        aggregation:
+          type: string
+          description: The aggregation type
+          example: COUNT
+          enum:
+            - COUNT
+            - COUNT_DISTINCT
+            - SUM
+            - MINIMUM
+            - MAXIMUM
+        dimensionId:
+          type: string
+          description: >-
+            The identifier of the dimension along which usage is aggregated in
+            this line item.
+          example: dim_c5f32b8cd8934356b5167a3b2c6c6314
+        total:
+          type: number
+          description: The total usage consumption amount.
+          example: 35810
+      required:
+        - aggregation
+        - dimensionId
+        - total
+    InvoiceLineItemTierResponseDto:
+      type: object
+      properties:
+        usage:
+          description: The usage consumption for the line item.
+          allOf:
+            - $ref: '#/components/schemas/InvoiceUsageResponseDto'
+        price:
+          description: The price of the line item.
+          allOf:
+            - $ref: '#/components/schemas/InvoicePriceResponseDto'
+      required:
+        - price
+    InvoiceLineItemResponseDto:
+      type: object
+      properties:
+        planId:
+          type: string
+          description: The identifier of the plan to which this line item corresponds.
+          example: pln_a23e148584d0463482c961b7f62f824c
+        price:
+          description: The price of the line item.
+          allOf:
+            - $ref: '#/components/schemas/InvoicePriceResponseDto'
+        usage:
+          description: The usage consumption for the line item.
+          allOf:
+            - $ref: '#/components/schemas/InvoiceUsageResponseDto'
+        items:
+          description: Sub-line items associated with this line item.
+          type: array
+          items:
+            $ref: '#/components/schemas/InvoiceLineItemTierResponseDto'
+        startDate:
+          format: date-time
+          type: string
+          description: Coverage period start date for the line item.
+        endDate:
+          format: date-time
+          type: string
+          description: Coverage period end date for the line item.
+      required:
+        - price
+        - items
+        - startDate
+        - endDate
+    InvoiceResponseDto:
+      type: object
+      properties:
+        kableClientId:
+          type: string
+          description: Your Kable client ID, found in the dashboard of your Kable account
+          example: kci_3c90e9ac92c64f31ae8ed84d21e18740
+        invoiceId:
+          type: string
+          description: A Kable-defined identifier for the customer.
+          example: inv_346daaa242674b179ecc44f43b5b9db4
+        customer:
+          description: The customer for whom the invoice was generated.
+          allOf:
+            - $ref: '#/components/schemas/InvoiceCustomerResponseDto'
+        postDate:
+          format: date-time
+          type: string
+          description: The date the invoice was posted.
+          example: '2022-03-01T00:00:00.000Z'
+        status:
+          type: string
+          description: The status of the invoice.
+          example: COMPLETE
+          enum:
+            - PENDING
+            - PROCESSING
+            - COMPLETE
+            - FAILED
+        price:
+          description: The total price of the invoice.
+          allOf:
+            - $ref: '#/components/schemas/InvoicePriceResponseDto'
+        items:
+          description: The invoice line items.
+          type: array
+          items:
+            $ref: '#/components/schemas/InvoiceLineItemResponseDto'
+        created:
+          format: date-time
+          type: string
+          description: Date at which entity was first created
+          example: '2022-03-01T00:00:00.000Z'
+        modified:
+          format: date-time
+          type: string
+          description: Date at which entity was last modified
+          example: '2022-03-01T00:00:00.000Z'
+      required:
+        - kableClientId
+        - invoiceId
+        - customer
+        - postDate
+        - status
+        - price
+        - items
+        - created
+        - modified
+    CreateTokenDto:
+      type: object
+      properties:
+        clientId:
+          type: string
+          example: yourcompanyuser_1234567890
+      required:
+        - clientId
+    DashboardTokenResponseDto:
+      type: object
+      properties:
+        token:
+          type: string
+          description: The access token value
+          example: 30e8c05f9add4ebeaab3ab2f42bdde31
+      required:
+        - token
+    UsageMetricRequestDto:
+      type: object
+      properties:
+        aggregation:
+          type: string
+          description: The aggregation by which to evaluate the metric.
+          example: COUNT
+          enum:
+            - COUNT
+            - COUNT_DISTINCT
+            - SUM
+            - MAXIMUM
+            - MINIMUM
+        dimensionId:
+          type: string
+          description: >-
+            The dimension to measure.
+
+
+            Note that one of either `dimensionId` or `dimensionKey` must be
+            provided.
+          example: dim_c5f32b8cd8934356b5167a3b2c6c6314
+        dimensionKey:
+          type: string
+          description: >-
+            The dimension to measure.
+
+
+            Note that one of either `dimensionId` or `dimensionKey` must be
+            provided.
+          example: userId
+        startDate:
+          format: date-time
+          type: string
+          description: >-
+            Start of the period over which to query. Timestamps must be
+            formatted as RFC 3339 strings like `2022-01-09T09:32:01Z`.
+          example: '2022-03-01T00:00:00Z'
+        endDate:
+          format: date-time
+          type: string
+          description: >-
+            End of the period over which to query. Timestamps must be formatted
+            as RFC 3339 strings like `2022-01-09T09:32:01Z`.
+          example: '2022-04-01T00:00:00Z'
+        interval:
+          type: string
+          description: Timeseries unit duration over which to return intervals.
+          example: DAY
+          enum:
+            - MINUTE
+            - HOUR
+            - DAY
+            - WEEK
+            - YEAR
+        clientId:
+          type: string
+          description: >-
+            When provided, query will consider only this customer. When `null`,
+            query will consider all of your customers.
+          example: yourcompanyuser_1234567890
+      required:
+        - aggregation
+        - startDate
+        - endDate
+        - interval
+    UsageMetricIntervalResponseDto:
+      type: object
+      properties:
+        intervalStart:
+          format: date-time
+          type: string
+          description: Start of the interval over which usage was evaluated.
+          example: '2022-03-01T00:00:00Z'
+        intervalEnd:
+          format: date-time
+          type: string
+          description: End of the interval over which usage was evaluated.
+          example: '2022-03-02T00:00:00Z'
+        dimension:
+          description: The dimension for which usage was evaluated.
+          allOf:
+            - $ref: '#/components/schemas/DimensionResponseDto'
+        clientId:
+          type: string
+          description: The customer for which usage was evaluated.
+          example: yourcompanyuser_1234567890
+        total:
+          type: number
+          description: The usage metric value for the given dimension and interval.
+          example: 2397
       required:
         - intervalStart
         - intervalEnd
+        - dimension
         - total
+    UsageMetricResponseDto:
+      type: object
       properties:
-        intervalStart:
-          type: string
+        startDate:
           format: date-time
-          example: "2022-03-01T00:00:00Z"
-          description: "Start of the interval"
-        intervalEnd:
           type: string
+          description: Start of the period over which usage was evaluated.
+          example: '2022-03-01T00:00:00Z'
+        endDate:
           format: date-time
-          example: "2022-03-02T00:00:00Z"
-          description: "End of the interval"
+          type: string
+          description: End of the period over which usage was evaluated.
+          example: '2022-04-01T00:00:00Z'
         dimension:
-          $ref: "#/components/schemas/Dimension"
+          description: The dimension for which usage was evaluated.
+          allOf:
+            - $ref: '#/components/schemas/DimensionResponseDto'
         clientId:
           type: string
-          example: "yourcompanyuser_1234567890"
-          description: When provided, query will consider only this customer. When `null`, query will consider all of your customers.
+          description: The customer for which usage was evaluated.
+          example: yourcompanyuser_1234567890
         total:
           type: number
-          example: 2749
-          description: The total usage for the requested interval
+          description: The usage metric value for the given dimension and interval.
+          example: 841395
+        intervals:
+          description: Time-series intervals over which usage was evaluated.
+          type: array
+          items:
+            $ref: '#/components/schemas/UsageMetricIntervalResponseDto'
+      required:
+        - startDate
+        - endDate
+        - dimension
+        - total
+        - intervals
+externalDocs:
+  description: Kable Documentation
+  url: https://docs.kable.io
