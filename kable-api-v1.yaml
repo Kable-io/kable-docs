@@ -1156,6 +1156,15 @@ paths:
           required: true
           schema:
             type: string
+      requestBody:
+        required: true
+        description: An event or list of usage events to record.
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/EventDto'
       responses:
         '200':
           description: Events successfully recorded
@@ -2370,6 +2379,45 @@ components:
         - dimension
         - total
         - intervals
+    EventDto:
+      type: object
+      properties:
+        clientId:
+          type: string
+          description: A unique identifier for the customer, defined by you.
+          example: yourcompanyuser_1234567890
+        timestamp:
+          format: date-time
+          type: string
+          description: >-
+            When the event occurred. Timestamps must be formatted as RFC-3339
+            strings like `2022-01-09T09:32:01Z`.
+          example: '2022-01-09T09:32:01Z'
+        data:
+          type: object
+          description: >-
+            `data` is a JSON-formatted object containing key-value pairs of
+            information to be tracked by Kable. The keys provided in the `data`
+            JSON correspond to the Dimensions you've defined on Kable.
+
+
+            When using a Kable library, you must **always** include a `clientId`
+            in the `record` payload so that Kable can accurately attribute
+            events to your customers.
+          example:
+            userId: xyz123
+            messageId: msg_824ae20a
+            countOfSomethingInteresting: 10
+            accountBalance: 399.99
+        transactionId:
+          type: string
+          description: >-
+            A unique identifier for the event, used as an idempotency key for
+            event deduplication.
+          example: 4e7c0f73-ef84-490c-8a47-4c7a3bec2df0
+      required:
+        - clientId
+        - timestamp
 externalDocs:
   description: Kable Documentation
   url: https://docs.kable.io
