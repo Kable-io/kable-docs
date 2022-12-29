@@ -601,7 +601,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/CreditBalanceResponseDto'
+                $ref: '#/components/schemas/CreditGrantResponseDto'
         '401': *ref_7
         '500': *ref_8
       tags: *ref_9
@@ -1410,6 +1410,7 @@ components:
             - CNY
             - AUD
             - NZD
+            - AED
         plans:
           description: The plans included in this bundle.
           type: array
@@ -1497,7 +1498,7 @@ components:
         customerId:
           type: string
           description: A Kable-defined identifier for the customer.
-          example: yourcompanyuser_1234567890
+          example: cus_8276e1ac8ed84d21c64f31ae0082fe
         clientId:
           type: string
           description: A unique identifier for the customer, defined by you.
@@ -1521,6 +1522,7 @@ components:
             - CNY
             - AUD
             - NZD
+            - AED
         status:
           type: string
           description: The status of the customer.
@@ -1535,11 +1537,13 @@ components:
           example: '2022-05-12T00:00:00.000Z'
         plans:
           description: The customer's plans.
+          example: &ref_27[]
           type: array
           items:
             type: string
         bundles:
           description: The customer's bundles.
+          example: &ref_28[]
           type: array
           items:
             type: string
@@ -1595,6 +1599,7 @@ components:
             - CNY
             - AUD
             - NZD
+            - AED
         stripeCustomerId:
           type: string
           description: >-
@@ -1653,7 +1658,7 @@ components:
         customerId:
           type: string
           description: A Kable-defined identifier for the customer.
-          example: yourcompanyuser_1234567890
+          example: cus_8276e1ac8ed84d21c64f31ae0082fe
         clientId:
           type: string
           description: A unique identifier for the customer, defined by you.
@@ -1679,11 +1684,13 @@ components:
           example: '2022-05-12T00:00:00.000Z'
         plans:
           description: The customer's plans.
+          example: *ref_27
           type: array
           items:
             type: string
         bundles:
           description: The customer's bundles.
+          example: *ref_28
           type: array
           items:
             type: string
@@ -1839,8 +1846,69 @@ components:
             A human-readable description that explains why the credit grant is
             being created.
           example: A top-up grant to buy more API credits.
+        expiration:
+          format: date-time
+          type: string
+          description: The expiration date of the credit grant.
+          example: '2023-01-01T00:00:00.000Z'
       required:
         - grantAmount
+    CreditGrantResponseDto:
+      type: object
+      properties:
+        creditGrantId:
+          type: string
+          description: A Kable-defined identifier for the credit grant.
+          example: crd_f55ad8df7b4b4890881595d3d8005c4f
+        customerId:
+          type: string
+          description: The customer for whom the credit was granted.
+          example: cus_8276e1ac8ed84d21c64f31ae0082fe
+        grantAmount:
+          type: number
+          description: The number of credits granted.
+          example: 100
+        balanceAmount:
+          type: number
+          description: The number of credits available.
+          example: 100
+        paidAmount:
+          type: number
+          description: The amount paid for the grant.
+          example: 199.99
+        currency:
+          type: string
+          description: Three-letter ISO currency code
+          example: USD
+          enum:
+            - USD
+            - CAD
+            - MXN
+            - EUR
+            - GBP
+            - JPY
+            - INR
+            - CNY
+            - AUD
+            - NZD
+            - AED
+        description:
+          type: string
+          description: >-
+            A human-readable description that explains why the credit grant was
+            created.
+          example: A top-up grant to buy more API credits.
+        expiration:
+          format: date-time
+          type: string
+          description: The expiration date of the credit grant.
+          example: '2023-01-01T00:00:00.000Z'
+      required:
+        - creditGrantId
+        - customerId
+        - grantAmount
+        - balanceAmount
+        - currency
     DimensionResponseDto:
       type: object
       properties:
@@ -1956,7 +2024,7 @@ components:
         type:
           type: string
           description: The type of plan.
-          enum: &ref_27
+          enum: &ref_29
             - USAGE
             - SUBSCRIPTION
           example: USAGE
@@ -1975,7 +2043,7 @@ components:
         interval:
           type: string
           description: The billing interval for the plan.
-          enum: &ref_28
+          enum: &ref_30
             - MONTH
           example: MONTH
         metadata:
@@ -1983,7 +2051,7 @@ components:
           description: >-
             Arbitrary key-value pairs to attach to the object that can be useful
             for controlling functionality inside your API.
-          example: &ref_29
+          example: &ref_31
             foo: bar
         price:
           description: The monthly price of the plan.
@@ -2026,7 +2094,7 @@ components:
         type:
           type: string
           description: The type of plan.
-          enum: *ref_27
+          enum: *ref_29
           example: USAGE
         dimensionId:
           type: string
@@ -2043,14 +2111,14 @@ components:
         interval:
           type: string
           description: The billing interval for the plan.
-          enum: *ref_28
+          enum: *ref_30
           example: MONTH
         metadata:
           type: object
           description: >-
             Arbitrary key-value pairs to attach to the object that can be useful
             for controlling functionality inside your API.
-          example: *ref_29
+          example: *ref_31
         price:
           description: The monthly price of the plan.
           allOf:
@@ -2061,7 +2129,7 @@ components:
         customerId:
           type: string
           description: A Kable-defined identifier for the customer.
-          example: yourcompanyuser_1234567890
+          example: cus_8276e1ac8ed84d21c64f31ae0082fe
         clientId:
           type: string
           description: A unique identifier for the customer, defined by you.
@@ -2092,6 +2160,7 @@ components:
             - CNY
             - AUD
             - NZD
+            - AED
         amount:
           type: number
           description: The total price amount.
