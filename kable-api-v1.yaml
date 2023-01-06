@@ -920,13 +920,17 @@ paths:
           schema:
             type: string
         - name: customerId
-          required: true
+          required: false
           in: query
+          description: A Kable-defined identifier for the customer.
+          example: cus_8276e1ac8ed84d21c64f31ae0082fe
           schema:
             type: string
         - name: clientId
-          required: true
+          required: false
           in: query
+          description: A unique identifier for the customer, defined by you.
+          example: yourcompanyuser_1234567890
           schema:
             type: string
       responses:
@@ -1010,7 +1014,7 @@ paths:
       tags: *ref_24
   /api/v1/tokens/create:
     post:
-      operationId: createInvoice
+      operationId: createToken
       summary: create token
       description: >-
         Generate a new access token for embedding Kable dashboards within your
