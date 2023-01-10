@@ -1492,6 +1492,49 @@ components:
           type: number
         metadata:
           type: object
+    BillingContactRequestDto:
+      type: object
+      properties:
+        firstName:
+          type: string
+          description: Contact's first name.
+          example: Bruce
+        lastName:
+          type: string
+          description: Contact's last name.
+          example: Wayne
+        email:
+          type: string
+          description: Contact's email address.
+          example: bruce@wayneenterprises.com
+        phone:
+          type: string
+          description: Contact's phone number.
+          example: 555-555-5555
+        addressLine1:
+          type: string
+          description: First line of contact's mailing address.
+          example: 1007 Mountain Drive
+        addressLine2:
+          type: string
+          description: Second line of contact's mailing address.
+          example: Apt 1
+        city:
+          type: string
+          description: City of contact's mailing address.
+          example: Gotham
+        state:
+          type: string
+          description: State of contact's mailing address.
+          example: NY
+        postalCode:
+          type: string
+          description: Postal code of contact's mailing address.
+          example: '10001'
+        country:
+          type: string
+          description: Country of contact's mailing address.
+          example: US
     CustomerResponseDto:
       type: object
       properties:
@@ -1539,6 +1582,12 @@ components:
           type: string
           description: The date at which the customer's next invoice will occur.
           example: '2022-05-12T00:00:00.000Z'
+        billingContact:
+          description: >-
+            A point of contact for invoices and other billing-related
+            communications.
+          allOf:
+            - $ref: '#/components/schemas/BillingContactRequestDto'
         plans:
           description: The customer's plans.
           example: &ref_27[]
@@ -1623,6 +1672,12 @@ components:
           type: array
           items:
             type: string
+        billingContact:
+          description: >-
+            A point of contact for invoices and other billing-related
+            communications.
+          allOf:
+            - $ref: '#/components/schemas/BillingContactRequestDto'
       required:
         - clientId
         - companyName
@@ -1686,6 +1741,12 @@ components:
           type: string
           description: The date at which the customer's next invoice will occur.
           example: '2022-05-12T00:00:00.000Z'
+        billingContact:
+          description: >-
+            A point of contact for invoices and other billing-related
+            communications.
+          allOf:
+            - $ref: '#/components/schemas/BillingContactRequestDto'
         plans:
           description: The customer's plans.
           example: *ref_27
@@ -1745,6 +1806,12 @@ components:
             The customer's Stripe `customer_id`, if any, for automatic invoice
             processing through Stripe.
           example: cus_a91565WBFwU30c
+        billingContact:
+          description: >-
+            A point of contact for invoices and other billing-related
+            communications.
+          allOf:
+            - $ref: '#/components/schemas/BillingContactRequestDto'
     CreateCustomerPlansRequestDto:
       type: object
       properties:
