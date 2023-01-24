@@ -605,11 +605,11 @@ paths:
         '401': *ref_7
         '500': *ref_8
       tags: *ref_9
-  /api/v1/dimensions:
+  /api/v1/customers/{customerId}/entitlements:
     get:
-      operationId: getDimensions
-      summary: get all dimensions
-      description: Retrieve all dimensions.
+      operationId: getCustomerEntitlements
+      summary: get all customer entitlements
+      description: Retrieve all customer entitlements, inferred from the customer's plans.
       parameters:
         - &ref_10
           name: Kable-Client-Id
@@ -625,15 +625,22 @@ paths:
           required: true
           schema:
             type: string
+        - name: customerId
+          required: true
+          in: path
+          description: The customer ID
+          example: cus_2a3b4c5d6e7f8g9h0i1j2k3l4m5n6o7p
+          schema:
+            type: string
       responses:
         '200':
-          description: Information about your dimensions
+          description: Information about all plan entitlements
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/DimensionResponseDto'
+                  $ref: '#/components/schemas/CustomerEntitlementResponseDto'
         '401': &ref_12
           description: Unauthorized
           content:
@@ -647,6 +654,81 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorMessage500'
       tags: &ref_14
+        - customers
+  /api/v1/customers/{customerId}/entitlements/{entitlementId}:
+    get:
+      operationId: getCustomerEntitlement
+      summary: get customer entitlement
+      description: Retrieve a customer entitlement.
+      parameters:
+        - *ref_10
+        - *ref_11
+        - name: customerId
+          required: true
+          in: path
+          description: The customer ID
+          example: cus_2a3b4c5d6e7f8g9h0i1j2k3l4m5n6o7p
+          schema:
+            type: string
+        - name: entitlementId
+          required: true
+          in: path
+          description: The entitlement ID
+          example: ent_4d5e6f7g8h9i0j1k2l3m4n5o6p1a2b3c
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Information about a plan entitlements
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomerEntitlementResponseDto'
+        '401': *ref_12
+        '500': *ref_13
+      tags: *ref_14
+  /api/v1/dimensions:
+    get:
+      operationId: getDimensions
+      summary: get all dimensions
+      description: Retrieve all dimensions.
+      parameters:
+        - &ref_15
+          name: Kable-Client-Id
+          in: header
+          description: Your Kable client ID, found in the dashboard of your Kable account.
+          required: true
+          schema:
+            type: string
+        - &ref_16
+          name: Kable-Client-Secret
+          in: header
+          description: Your `LIVE` or `TEST` secret key.
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Information about your dimensions
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/DimensionResponseDto'
+        '401': &ref_17
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage401'
+        '500': &ref_18
+          description: Something went wrong
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage500'
+      tags: &ref_19
         - dimensions
   /api/v1/dimensions/{dimensionId}:
     get:
@@ -654,8 +736,8 @@ paths:
       summary: get dimension
       description: Retrieve a dimension.
       parameters:
-        - *ref_10
-        - *ref_11
+        - *ref_15
+        - *ref_16
         - name: dimensionId
           required: true
           in: path
@@ -670,17 +752,17 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/DimensionResponseDto'
-        '401': *ref_12
-        '500': *ref_13
-      tags: *ref_14
+        '401': *ref_17
+        '500': *ref_18
+      tags: *ref_19
   /api/v1/dimensions/create:
     post:
       operationId: createDimension
       summary: create dimension
       description: Create a dimension.
       parameters:
-        - *ref_10
-        - *ref_11
+        - *ref_15
+        - *ref_16
       requestBody:
         required: true
         content:
@@ -694,17 +776,17 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/DimensionResponseDto'
-        '401': *ref_12
-        '500': *ref_13
-      tags: *ref_14
+        '401': *ref_17
+        '500': *ref_18
+      tags: *ref_19
   /api/v1/dimensions/{dimensionId}/update:
     post:
       operationId: updateDimension
       summary: update dimension
       description: Update a dimension.
       parameters:
-        - *ref_10
-        - *ref_11
+        - *ref_15
+        - *ref_16
         - name: dimensionId
           required: true
           in: path
@@ -725,9 +807,9 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/DimensionResponseDto'
-        '401': *ref_12
-        '500': *ref_13
-      tags: *ref_14
+        '401': *ref_17
+        '500': *ref_18
+      tags: *ref_19
   /api/v1/dimensions/{dimensionId}/delete:
     post:
       operationId: deleteDimension
@@ -737,8 +819,8 @@ paths:
 
          You cannot delete a dimension if it is in use by a plan.
       parameters:
-        - *ref_10
-        - *ref_11
+        - *ref_15
+        - *ref_16
         - name: dimensionId
           required: true
           in: path
@@ -749,23 +831,167 @@ paths:
       responses:
         '201':
           description: Dimension successfully deleted
-        '401': *ref_12
-        '500': *ref_13
-      tags: *ref_14
-  /api/v1/plans:
+        '401': *ref_17
+        '500': *ref_18
+      tags: *ref_19
+  /api/v1/entitlements:
     get:
-      operationId: getPlans
-      summary: get all plans
-      description: Retrieve all plans.
+      operationId: getEntitlements
+      summary: get all entitlements
+      description: Retrieve all entitlements.
       parameters:
-        - &ref_15
+        - &ref_20
           name: Kable-Client-Id
           in: header
           description: Your Kable client ID, found in the dashboard of your Kable account.
           required: true
           schema:
             type: string
-        - &ref_16
+        - &ref_21
+          name: Kable-Client-Secret
+          in: header
+          description: Your `LIVE` or `TEST` secret key.
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Information about all entitlements
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/EntitlementResponseDto'
+        '401': &ref_22
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage401'
+        '500': &ref_23
+          description: Something went wrong
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage500'
+      tags: &ref_24
+        - entitlements
+  /api/v1/entitlements/{entitlementId}:
+    get:
+      operationId: getEntitlement
+      summary: get entitlement
+      description: Retrieve an entitlement.
+      parameters:
+        - *ref_20
+        - *ref_21
+        - name: entitlementId
+          required: true
+          in: path
+          description: The entitlement ID
+          example: ent_a44e148584d0463482c961b7f62f825d
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Information about the entitlement
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EntitlementResponseDto'
+        '401': *ref_22
+        '500': *ref_23
+      tags: *ref_24
+  /api/v1/entitlements/create:
+    post:
+      operationId: createEntitlement
+      summary: create entitlement
+      description: Create an entitlement.
+      parameters:
+        - *ref_20
+        - *ref_21
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateEntitlementDto'
+      responses:
+        '201':
+          description: Entitlement successfully created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EntitlementResponseDto'
+        '401': *ref_22
+        '500': *ref_23
+      tags: *ref_24
+  /api/v1/entitlements/{entitlementId}/update:
+    post:
+      operationId: updateEntitlement
+      summary: update entitlement
+      description: Update an entitlement.
+      parameters:
+        - *ref_20
+        - *ref_21
+        - name: entitlementId
+          required: true
+          in: path
+          description: The entitlement ID
+          example: ent_a44e148584d0463482c961b7f62f825d
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateEntitlementDto'
+      responses:
+        '201':
+          description: Entitlement successfully updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EntitlementResponseDto'
+        '401': *ref_22
+        '500': *ref_23
+      tags: *ref_24
+  /api/v1/entitlements/{entitlementId}/delete:
+    post:
+      operationId: deleteEntitlement
+      summary: delete entitlement
+      description: Delete an entitlement.
+      parameters:
+        - *ref_20
+        - *ref_21
+        - name: entitlementId
+          required: true
+          in: path
+          description: The entitlement ID
+          example: ent_a44e148584d0463482c961b7f62f825d
+          schema:
+            type: string
+      responses:
+        '201':
+          description: Entitlement successfully deleted
+        '401': *ref_22
+        '500': *ref_23
+      tags: *ref_24
+  /api/v1/plans:
+    get:
+      operationId: getPlans
+      summary: get all plans
+      description: Retrieve all plans.
+      parameters:
+        - &ref_25
+          name: Kable-Client-Id
+          in: header
+          description: Your Kable client ID, found in the dashboard of your Kable account.
+          required: true
+          schema:
+            type: string
+        - &ref_26
           name: Kable-Client-Secret
           in: header
           description: Your `LIVE` or `TEST` secret key.
@@ -781,19 +1007,19 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/PlanResponseDto'
-        '401': &ref_17
+        '401': &ref_27
           description: Unauthorized
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorMessage401'
-        '500': &ref_18
+        '500': &ref_28
           description: Something went wrong
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorMessage500'
-      tags: &ref_19
+      tags: &ref_29
         - plans
   /api/v1/plans/{planId}:
     get:
@@ -801,8 +1027,8 @@ paths:
       summary: get plan
       description: Retrieve a plan.
       parameters:
-        - *ref_15
-        - *ref_16
+        - *ref_25
+        - *ref_26
         - name: planId
           required: true
           in: path
@@ -817,17 +1043,17 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/PlanResponseDto'
-        '401': *ref_17
-        '500': *ref_18
-      tags: *ref_19
+        '401': *ref_27
+        '500': *ref_28
+      tags: *ref_29
   /api/v1/plans/create:
     post:
       operationId: createPlan
       summary: create plan
       description: Create a plan.
       parameters:
-        - *ref_15
-        - *ref_16
+        - *ref_25
+        - *ref_26
       requestBody:
         required: true
         content:
@@ -841,17 +1067,17 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/PlanResponseDto'
-        '401': *ref_17
-        '500': *ref_18
-      tags: *ref_19
+        '401': *ref_27
+        '500': *ref_28
+      tags: *ref_29
   /api/v1/plans/{planId}/update:
     post:
       operationId: updatePlan
       summary: update plan
       description: Update a plan.
       parameters:
-        - *ref_15
-        - *ref_16
+        - *ref_25
+        - *ref_26
         - name: planId
           required: true
           in: path
@@ -872,9 +1098,9 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/PlanResponseDto'
-        '401': *ref_17
-        '500': *ref_18
-      tags: *ref_19
+        '401': *ref_27
+        '500': *ref_28
+      tags: *ref_29
   /api/v1/plans/{planId}/delete:
     post:
       operationId: deletePlan
@@ -884,8 +1110,8 @@ paths:
 
         You cannot delete a plan to which a customer is actively subscribed.
       parameters:
-        - *ref_15
-        - *ref_16
+        - *ref_25
+        - *ref_26
         - name: planId
           required: true
           in: path
@@ -896,23 +1122,205 @@ paths:
       responses:
         '201':
           description: Plan successfully deleted
-        '401': *ref_17
-        '500': *ref_18
-      tags: *ref_19
-  /api/v1/invoices:
+        '401': *ref_27
+        '500': *ref_28
+      tags: *ref_29
+  /api/v1/plans/{planId}/entitlements:
     get:
-      operationId: getInvoices
-      summary: get all invoices
-      description: Retrieve all invoices.
+      operationId: getAllPlanEntitlements
+      summary: get all plan entitlements
+      description: Retrieve all plan entitlements.
       parameters:
-        - &ref_20
+        - &ref_30
           name: Kable-Client-Id
           in: header
           description: Your Kable client ID, found in the dashboard of your Kable account.
           required: true
           schema:
             type: string
-        - &ref_21
+        - &ref_31
+          name: Kable-Client-Secret
+          in: header
+          description: Your `LIVE` or `TEST` secret key.
+          required: true
+          schema:
+            type: string
+        - name: planId
+          required: true
+          in: path
+          description: The plan ID
+          example: pln_a23e148584d0463482c961b7f62f824c
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Information about all plan entitlements
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PlanEntitlementResponseDto'
+        '401': &ref_32
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage401'
+        '500': &ref_33
+          description: Something went wrong
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage500'
+      tags: &ref_34
+        - plans
+  /api/v1/plans/{planId}/entitlements/{entitlementId}:
+    get:
+      operationId: getPlanEntitlement
+      summary: get plan entitlement
+      description: Retrieve a plan entitlement.
+      parameters:
+        - *ref_30
+        - *ref_31
+        - name: planId
+          required: true
+          in: path
+          description: The plan ID
+          example: pln_a23e148584d0463482c961b7f62f824c
+          schema:
+            type: string
+        - name: entitlementId
+          required: true
+          in: path
+          description: The entitlement ID
+          example: ent_a44e148584d0463482c961b7f62f825d
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Information about the plan entitlement
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PlanEntitlementResponseDto'
+        '401': *ref_32
+        '500': *ref_33
+      tags: *ref_34
+  /api/v1/plans/{planId}/entitlements/{entitlementId}/update:
+    post:
+      operationId: updatePlanEntitlement
+      summary: update plan entitlement
+      description: Update a plan entitlement.
+      parameters:
+        - *ref_30
+        - *ref_31
+        - name: planId
+          required: true
+          in: path
+          description: The plan ID
+          example: pln_a23e148584d0463482c961b7f62f824c
+          schema:
+            type: string
+        - name: entitlementId
+          required: true
+          in: path
+          description: The entitlement ID
+          example: ent_a44e148584d0463482c961b7f62f825d
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdatePlanEntitlementRequestDto'
+      responses:
+        '201':
+          description: Plan entitlement successfully updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PlanEntitlementResponseDto'
+        '401': *ref_32
+        '500': *ref_33
+      tags: *ref_34
+  /api/v1/plans/{planId}/entitlements/add:
+    post:
+      operationId: addPlanEntitlement
+      summary: add plan entitlement
+      description: Add an entitlement to a plan.
+      parameters:
+        - *ref_30
+        - *ref_31
+        - name: planId
+          required: true
+          in: path
+          description: The plan ID
+          example: pln_a23e148584d0463482c961b7f62f824c
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AddPlanEntitlementRequestDto'
+      responses:
+        '201':
+          description: Plan entitlement successfully added
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PlanResponseDto'
+        '401': *ref_32
+        '500': *ref_33
+      tags: *ref_34
+  /api/v1/plans/{planId}/entitlements/remove:
+    post:
+      operationId: removePlanEntitlement
+      summary: remove plan entitlement
+      description: Remove an entitlement from a plan.
+      parameters:
+        - *ref_30
+        - *ref_31
+        - name: planId
+          required: true
+          in: path
+          description: The plan ID
+          example: pln_a23e148584d0463482c961b7f62f824c
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RemovePlanEntitlementRequestDto'
+      responses:
+        '201':
+          description: Plan entitlement successfully removed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PlanResponseDto'
+        '401': *ref_32
+        '500': *ref_33
+      tags: *ref_34
+  /api/v1/invoices:
+    get:
+      operationId: getInvoices
+      summary: get all invoices
+      description: Retrieve all invoices.
+      parameters:
+        - &ref_35
+          name: Kable-Client-Id
+          in: header
+          description: Your Kable client ID, found in the dashboard of your Kable account.
+          required: true
+          schema:
+            type: string
+        - &ref_36
           name: Kable-Client-Secret
           in: header
           description: Your `LIVE` or `TEST` secret key.
@@ -942,19 +1350,19 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/InvoiceResponseDto'
-        '401': &ref_22
+        '401': &ref_37
           description: Unauthorized
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorMessage401'
-        '500': &ref_23
+        '500': &ref_38
           description: Something went wrong
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorMessage500'
-      tags: &ref_24
+      tags: &ref_39
         - invoices
   /api/v1/invoices/{invoiceId}:
     get:
@@ -962,8 +1370,8 @@ paths:
       summary: get invoice
       description: Retrieve an invoice
       parameters:
-        - *ref_20
-        - *ref_21
+        - *ref_35
+        - *ref_36
         - name: invoiceId
           required: true
           in: path
@@ -978,17 +1386,17 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InvoiceResponseDto'
-        '401': *ref_22
-        '500': *ref_23
-      tags: *ref_24
+        '401': *ref_37
+        '500': *ref_38
+      tags: *ref_39
   /api/v1/invoices/{invoiceId}/download:
     get:
       operationId: downloadInvoice
       summary: download invoice
       description: Download an invoice
       parameters:
-        - *ref_20
-        - *ref_21
+        - *ref_35
+        - *ref_36
         - name: invoiceId
           required: true
           in: path
@@ -1009,9 +1417,9 @@ paths:
       responses:
         '200':
           description: Invoice successfully downloaded
-        '401': *ref_22
-        '500': *ref_23
-      tags: *ref_24
+        '401': *ref_37
+        '500': *ref_38
+      tags: *ref_39
   /api/v1/tokens/create:
     post:
       operationId: createToken
@@ -1270,18 +1678,116 @@ components:
           example: Something went wrong
       required:
         - message
+    PriceTierResponseDto:
+      type: object
+      properties:
+        type:
+          type: string
+          description: The tier price type
+          example: UNIT
+          enum:
+            - UNIT
+            - PACKAGE
+            - FLAT
+            - PERCENTAGE
+            - SUBSCRIPTION
+            - MINIMUM
+            - MAXIMUM
+            - DISCOUNT
+        amount:
+          type: number
+          description: The tier price amount
+          example: 199.99
+        start:
+          type: number
+          description: The tier start amount
+          example: 0
+        finish:
+          type: number
+          description: The tier finish amount (infinity indicated by -1)
+          example: -1
+        packageSize:
+          type: number
+          description: The tier package size (only applicable to package price tiers)
+          example: 1000
+      required:
+        - type
+        - amount
     PlanPriceResponseDto:
       type: object
       properties:
         currency:
           type: string
+          description: Three-letter ISO currency code
+          example: USD
+          enum:
+            - USD
+            - CAD
+            - MXN
+            - EUR
+            - GBP
+            - JPY
+            - INR
+            - CNY
+            - AUD
+            - NZD
+            - AED
         tiers:
+          description: The tiered pricing of the plan
           type: array
           items:
-            type: string
+            $ref: '#/components/schemas/PriceTierResponseDto'
       required:
         - currency
         - tiers
+    ResourceEntitlementResponseDto:
+      type: object
+      properties:
+        name:
+          type: string
+          description: The name of the entitlement
+          example: Premium Support
+        entitlementId:
+          type: string
+          description: A Kable-defined identifier for the entitlement.
+          example: ent_a44e148584d0463482c961b7f62f825d
+        externalId:
+          type: string
+          description: An identifier for the entitlement as defined by your API.
+          example: yourcompany_entitlement789
+        datatype:
+          type: string
+          description: The type of data supported by the entitlement.
+          example: STRING
+        description:
+          type: string
+          description: A description of the entitlement.
+          example: >-
+            Customers have access to 24/7 premium support channels through Slack
+            and email.
+        created:
+          format: date-time
+          type: string
+          description: Date at which entity was first created
+          example: '2023-03-01T00:00:00.000Z'
+        modified:
+          format: date-time
+          type: string
+          description: Date at which entity was last modified
+          example: '2023-03-01T00:00:00.000Z'
+        value:
+          type: object
+          description: The value of the entitlement.
+          example: true
+      required:
+        - name
+        - entitlementId
+        - externalId
+        - datatype
+        - description
+        - created
+        - modified
+        - value
     PlanResponseDto:
       type: object
       properties:
@@ -1316,7 +1822,7 @@ components:
         type:
           type: string
           description: The type of plan.
-          enum:
+          enum: &ref_40
             - USAGE
             - SUBCRIPTION
           example: USAGE
@@ -1336,19 +1842,24 @@ components:
           type: string
           description: The billing interval for the plan.
           example: MONTH
-          enum:
+          enum: &ref_41
             - MONTH
         metadata:
           type: object
           description: >-
             Arbitrary key-value pairs to attach to the object that can be useful
             for controlling functionality inside your API.
-          example:
+          example: &ref_42
             foo: bar
         price:
           description: The monthly price of the plan.
           allOf:
             - $ref: '#/components/schemas/PlanPriceResponseDto'
+        entitlements:
+          description: The entitlements associated with this plan.
+          type: array
+          items:
+            $ref: '#/components/schemas/ResourceEntitlementResponseDto'
         created:
           format: date-time
           type: string
@@ -1366,6 +1877,7 @@ components:
         - dimensionId
         - interval
         - price
+        - entitlements
         - created
         - modified
     BundleResponseDto:
@@ -1403,7 +1915,7 @@ components:
           type: string
           description: Three-letter ISO currency code
           example: USD
-          enum:
+          enum: &ref_43
             - USD
             - CAD
             - MXN
@@ -1425,7 +1937,7 @@ components:
           description: >-
             Arbitrary key-value pairs to attach to the object that can be useful
             for controlling functionality inside your API.
-          example:
+          example: &ref_44
             foo: bar
         created:
           format: date-time
@@ -1535,6 +2047,170 @@ components:
           type: string
           description: Country of contact's mailing address.
           example: US
+    CustomerPlanResponseDto:
+      type: object
+      properties:
+        planId:
+          type: string
+          description: A Kable-defined identifier for the plan.
+          example: pln_a23e148584d0463482c961b7f62f824c
+        name:
+          type: string
+          description: >-
+            A human-readable name for the plan, visible on dashboards, invoices,
+            and reports.
+          example: Requests Usage Plan
+        externalId:
+          type: string
+          description: An identifier for the plan as defined by your API.
+          example: yourcompany_plan123
+        description:
+          type: string
+          description: >-
+            A human-readable description for the plan, visible on dashboards,
+            invoices, and reports.
+          example: A usage plan based on the number of API requests
+        nickname:
+          type: string
+          description: >-
+            An additional identifier for the plan, defined by you, that is *not*
+            visible to customers. If you have different *Monthly Active Users
+            Plan*s for different cohorts of customers, this is a useful place to
+            differentiate those.
+          example: requests_usage_v1
+        type:
+          type: string
+          description: The type of plan.
+          enum: *ref_40
+          example: USAGE
+        dimensionId:
+          type: string
+          description: >-
+            An identifier of the dimension along which usage is aggregated in
+            this plan, relevant only for usage plans.
+          example: dim_c5f32b8cd8934356b5167a3b2c6c6314
+        aggregation:
+          type: string
+          description: >-
+            The aggregation along which usage metrics are calculated in this
+            plan, relevant only for usage plans.
+          example: COUNT
+        interval:
+          type: string
+          description: The billing interval for the plan.
+          example: MONTH
+          enum: *ref_41
+        metadata:
+          type: object
+          description: >-
+            Arbitrary key-value pairs to attach to the object that can be useful
+            for controlling functionality inside your API.
+          example: *ref_42
+        price:
+          description: The monthly price of the plan.
+          allOf:
+            - $ref: '#/components/schemas/PlanPriceResponseDto'
+        entitlements:
+          description: The entitlements associated with this plan.
+          type: array
+          items:
+            $ref: '#/components/schemas/ResourceEntitlementResponseDto'
+        created:
+          format: date-time
+          type: string
+          description: Date at which entity was first created
+          example: '2022-03-01T00:00:00.000Z'
+        modified:
+          format: date-time
+          type: string
+          description: Date at which entity was last modified
+          example: '2022-03-01T00:00:00.000Z'
+        addedDate:
+          format: date-time
+          type: string
+        endedDate:
+          format: date-time
+          type: string
+        periodStartDate:
+          format: date-time
+          type: string
+        periodEndDate:
+          format: date-time
+          type: string
+      required:
+        - planId
+        - name
+        - type
+        - dimensionId
+        - interval
+        - price
+        - entitlements
+        - created
+        - modified
+        - addedDate
+    CustomerBundleResponseDto:
+      type: object
+      properties:
+        bundleId:
+          type: string
+          description: A Kable-defined identifier for the bundle.
+          example: bun_a23e148584d0463482c961b7f62f824c
+        name:
+          type: string
+          description: >-
+            A human-readable name for the bundle, visible on dashboards,
+            invoices, and reports.
+          example: Professional Package
+        externalId:
+          type: string
+          description: An identifier for the bundle as defined by your API.
+          example: yourcompany_bun123
+        description:
+          type: string
+          description: >-
+            A human-readable description for the bundle, visible on dashboards,
+            invoices, and reports.
+          example: The perfect package for scaling businesses
+        nickname:
+          type: string
+          description: >-
+            An additional identifier for the bundle, defined by you, that is
+            *not* visible to customers. If you have different *Monthly Active
+            Users Bundle*s for different cohorts of customers, this is a useful
+            place to differentiate those.
+          example: professional_2022
+        currency:
+          type: string
+          description: Three-letter ISO currency code
+          example: USD
+          enum: *ref_43
+        plans:
+          description: The plans included in this bundle.
+          type: array
+          items:
+            $ref: '#/components/schemas/PlanResponseDto'
+        metadata:
+          type: object
+          description: >-
+            Arbitrary key-value pairs to attach to the object that can be useful
+            for controlling functionality inside your API.
+          example: *ref_44
+        created:
+          format: date-time
+          type: string
+          description: Date at which entity was first created
+          example: '2022-03-01T00:00:00.000Z'
+        modified:
+          format: date-time
+          type: string
+          description: Date at which entity was last modified
+          example: '2022-03-01T00:00:00.000Z'
+      required:
+        - bundleId
+        - name
+        - currency
+        - created
+        - modified
     CustomerResponseDto:
       type: object
       properties:
@@ -1558,7 +2234,7 @@ components:
           type: string
           description: Three-letter ISO currency code
           example: USD
-          enum: &ref_25
+          enum: &ref_45
             - USD
             - CAD
             - MXN
@@ -1574,7 +2250,7 @@ components:
           type: string
           description: The status of the customer.
           example: ACTIVE
-          enum: &ref_26
+          enum: &ref_46
             - ACTIVE
             - CANCELLED
         nextInvoiceDate:
@@ -1590,16 +2266,19 @@ components:
             - $ref: '#/components/schemas/BillingContactRequestDto'
         plans:
           description: The customer's plans.
-          example: &ref_27[]
           type: array
           items:
-            type: string
+            $ref: '#/components/schemas/CustomerPlanResponseDto'
         bundles:
           description: The customer's bundles.
-          example: &ref_28[]
           type: array
           items:
-            type: string
+            $ref: '#/components/schemas/CustomerBundleResponseDto'
+        entitlements:
+          description: The customer's entitlements.
+          type: array
+          items:
+            $ref: '#/components/schemas/ResourceEntitlementResponseDto'
         created:
           format: date-time
           type: string
@@ -1619,6 +2298,7 @@ components:
         - status
         - plans
         - bundles
+        - entitlements
         - created
         - modified
     CreateCustomerRequestDto:
@@ -1730,12 +2410,12 @@ components:
           type: string
           description: Three-letter ISO currency code
           example: USD
-          enum: *ref_25
+          enum: *ref_45
         status:
           type: string
           description: The status of the customer.
           example: ACTIVE
-          enum: *ref_26
+          enum: *ref_46
         nextInvoiceDate:
           format: date-time
           type: string
@@ -1749,16 +2429,19 @@ components:
             - $ref: '#/components/schemas/BillingContactRequestDto'
         plans:
           description: The customer's plans.
-          example: *ref_27
           type: array
           items:
-            type: string
+            $ref: '#/components/schemas/CustomerPlanResponseDto'
         bundles:
           description: The customer's bundles.
-          example: *ref_28
           type: array
           items:
-            type: string
+            $ref: '#/components/schemas/CustomerBundleResponseDto'
+        entitlements:
+          description: The customer's entitlements.
+          type: array
+          items:
+            $ref: '#/components/schemas/ResourceEntitlementResponseDto'
         created:
           format: date-time
           type: string
@@ -1785,6 +2468,7 @@ components:
         - status
         - plans
         - bundles
+        - entitlements
         - created
         - modified
     UpdateCustomerRequestDto:
@@ -1980,6 +2664,54 @@ components:
         - grantAmount
         - balanceAmount
         - currency
+    CustomerEntitlementResponseDto:
+      type: object
+      properties:
+        name:
+          type: string
+          description: The name of the entitlement
+          example: Premium Support
+        entitlementId:
+          type: string
+          description: A Kable-defined identifier for the entitlement.
+          example: ent_a44e148584d0463482c961b7f62f825d
+        externalId:
+          type: string
+          description: An identifier for the entitlement as defined by your API.
+          example: yourcompany_entitlement789
+        datatype:
+          type: string
+          description: The type of data supported by the entitlement.
+          example: STRING
+        description:
+          type: string
+          description: A description of the entitlement.
+          example: >-
+            Customers have access to 24/7 premium support channels through Slack
+            and email.
+        created:
+          format: date-time
+          type: string
+          description: Date at which entity was first created
+          example: '2023-03-01T00:00:00.000Z'
+        modified:
+          format: date-time
+          type: string
+          description: Date at which entity was last modified
+          example: '2023-03-01T00:00:00.000Z'
+        value:
+          type: object
+          description: The value of the entitlement.
+          example: true
+      required:
+        - name
+        - entitlementId
+        - externalId
+        - datatype
+        - description
+        - created
+        - modified
+        - value
     DimensionResponseDto:
       type: object
       properties:
@@ -2035,6 +2767,96 @@ components:
           example: User
       required:
         - name
+    EntitlementResponseDto:
+      type: object
+      properties:
+        name:
+          type: string
+          description: The name of the entitlement
+          example: Premium Support
+        entitlementId:
+          type: string
+          description: A Kable-defined identifier for the entitlement.
+          example: ent_a44e148584d0463482c961b7f62f825d
+        externalId:
+          type: string
+          description: An identifier for the entitlement as defined by your API.
+          example: yourcompany_entitlement789
+        datatype:
+          type: string
+          description: The type of data supported by the entitlement.
+          example: STRING
+        description:
+          type: string
+          description: A description of the entitlement.
+          example: >-
+            Customers have access to 24/7 premium support channels through Slack
+            and email.
+        created:
+          format: date-time
+          type: string
+          description: Date at which entity was first created
+          example: '2023-03-01T00:00:00.000Z'
+        modified:
+          format: date-time
+          type: string
+          description: Date at which entity was last modified
+          example: '2023-03-01T00:00:00.000Z'
+      required:
+        - name
+        - entitlementId
+        - externalId
+        - datatype
+        - description
+        - created
+        - modified
+    CreateEntitlementDto:
+      type: object
+      properties:
+        name:
+          type: string
+          description: The name of the entitlement
+          example: Premium Support
+        externalId:
+          type: string
+          description: An identifier for the entitlement as defined by your API.
+          example: yourcompany_entitlement789
+        datatype:
+          type: string
+          description: The type of data supported by the entitlement.
+          example: STRING
+          default: BOOLEAN
+        description:
+          type: string
+          description: A description of the entitlement.
+          example: >-
+            Customers have access to 24/7 premium support channels through Slack
+            and email.
+      required:
+        - name
+        - externalId
+    UpdateEntitlementDto:
+      type: object
+      properties:
+        name:
+          type: string
+          description: The name of the entitlement
+          example: Premium Support
+        externalId:
+          type: string
+          description: An identifier for the entitlement as defined by your API.
+          example: yourcompany_entitlement789
+        datatype:
+          type: string
+          description: The type of data supported by the entitlement.
+          example: STRING
+          default: BOOLEAN
+        description:
+          type: string
+          description: A description of the entitlement.
+          example: >-
+            Customers have access to 24/7 premium support channels through Slack
+            and email.
     PlanPriceRequestDto:
       type: object
       properties:
@@ -2095,7 +2917,7 @@ components:
         type:
           type: string
           description: The type of plan.
-          enum: &ref_29
+          enum: &ref_47
             - USAGE
             - SUBSCRIPTION
           example: USAGE
@@ -2114,7 +2936,7 @@ components:
         interval:
           type: string
           description: The billing interval for the plan.
-          enum: &ref_30
+          enum: &ref_48
             - MONTH
           example: MONTH
         metadata:
@@ -2122,7 +2944,7 @@ components:
           description: >-
             Arbitrary key-value pairs to attach to the object that can be useful
             for controlling functionality inside your API.
-          example: &ref_31
+          example: &ref_49
             foo: bar
         price:
           description: The monthly price of the plan.
@@ -2165,7 +2987,7 @@ components:
         type:
           type: string
           description: The type of plan.
-          enum: *ref_29
+          enum: *ref_47
           example: USAGE
         dimensionId:
           type: string
@@ -2182,18 +3004,107 @@ components:
         interval:
           type: string
           description: The billing interval for the plan.
-          enum: *ref_30
+          enum: *ref_48
           example: MONTH
         metadata:
           type: object
           description: >-
             Arbitrary key-value pairs to attach to the object that can be useful
             for controlling functionality inside your API.
-          example: *ref_31
+          example: *ref_49
         price:
           description: The monthly price of the plan.
           allOf:
             - $ref: '#/components/schemas/PlanPriceRequestDto'
+    PlanEntitlementResponseDto:
+      type: object
+      properties:
+        name:
+          type: string
+          description: The name of the entitlement
+          example: Premium Support
+        entitlementId:
+          type: string
+          description: A Kable-defined identifier for the entitlement.
+          example: ent_a44e148584d0463482c961b7f62f825d
+        externalId:
+          type: string
+          description: An identifier for the entitlement as defined by your API.
+          example: yourcompany_entitlement789
+        datatype:
+          type: string
+          description: The type of data supported by the entitlement.
+          example: STRING
+        description:
+          type: string
+          description: A description of the entitlement.
+          example: >-
+            Customers have access to 24/7 premium support channels through Slack
+            and email.
+        created:
+          format: date-time
+          type: string
+          description: Date at which entity was first created
+          example: '2023-03-01T00:00:00.000Z'
+        modified:
+          format: date-time
+          type: string
+          description: Date at which entity was last modified
+          example: '2023-03-01T00:00:00.000Z'
+        value:
+          type: object
+          description: The value of the entitlement.
+          example: true
+      required:
+        - name
+        - entitlementId
+        - externalId
+        - datatype
+        - description
+        - created
+        - modified
+        - value
+    UpdatePlanEntitlementRequestDto:
+      type: object
+      properties:
+        value:
+          type: object
+          description: The plan entitlement value
+          example: true
+      required:
+        - value
+    PlanEntitlementRequestDto:
+      type: object
+      properties:
+        entitlementId:
+          type: string
+          description: The entitlement to assign.
+          example: ent_a44e148584d0463482c961b7f62f825d
+        value:
+          type: object
+          description: The value of the entitlement.
+          example: true
+      required:
+        - entitlementId
+        - value
+    AddPlanEntitlementRequestDto:
+      type: object
+      properties:
+        entitlements:
+          description: The plan entitlements to add
+          type: array
+          items:
+            $ref: '#/components/schemas/PlanEntitlementRequestDto'
+    RemovePlanEntitlementRequestDto:
+      type: object
+      properties:
+        entitlementIds:
+          description: Entitlements to remove
+          example:
+            - ent_a44e148584d0463482c961b7f62f825d
+          type: array
+          items:
+            type: string
     InvoiceCustomerResponseDto:
       type: object
       properties:
